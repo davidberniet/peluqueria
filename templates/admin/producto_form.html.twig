@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ editando ? 'Editar' : 'Nuevo' }} Producto | Admin Venus{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto my-10">
+    <div class="mb-8">
+        <a href="{{ path('app_admin_productos') }}" class="text-pink-600 font-bold hover:underline mb-4 inline-block">&larr; Volver al inventario</a>
+        <h1 class="text-3xl font-extrabold text-gray-900">{{ editando ? 'Editar Producto' : 'Añadir Nuevo Producto' }}</h1>
+    </div>
+
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-1">
+                    {{ form_label(form.nombre, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.nombre) }}
+                </div>
+                <div class="md:col-span-1">
+                    {{ form_label(form.marca, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.marca) }}
+                </div>
+
+                <div class="md:col-span-2">
+                    {{ form_label(form.descripcion, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.descripcion) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.precio, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.precio) }}
+                </div>
+                <div>
+                    {{ form_label(form.local, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.local) }}
+                </div>
+                
+                <div class="md:col-span-2 mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row items-center gap-6">
+                    
+                    {# Si estamos editando y ya hay foto, la mostramos #}
+                    {% if editando and producto.imagen %}
+                        <div class="shrink-0 text-center">
+                            <p class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Foto Actual</p>
+                            <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="Actual" class="w-24 h-24 object-cover rounded-xl shadow-sm border border-gray-200">
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex-grow w-full">
+                        {{ form_label(form.imagen, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-900 mb-2'}}) }}
+                        {{ form_widget(form.imagen) }}
+                        <p class="text-xs text-gray-500 mt-2">Formatos permitidos: JPG, PNG, WEBP (Máx. 2MB). Si subes una nueva, reemplazará a la anterior.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-gray-900 hover:bg-pink-600 text-white font-bold py-4 px-4 rounded-xl shadow-md transition-all mt-8 transform hover:-translate-y-0.5 text-lg">
+                {{ editando ? 'Guardar Cambios' : 'Añadir al Catálogo' }}
+            </button>
+            
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

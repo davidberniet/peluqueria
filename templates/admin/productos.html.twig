@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestionar Productos | Admin Venus{% endblock %}
+
+{% block body %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <h1 class="text-3xl font-extrabold text-gray-900">Inventario de Productos</h1>
+        <p class="text-gray-500 mt-1">Añade o modifica los productos de tu tienda.</p>
+    </div>
+    
+    <div class="flex gap-3">
+        <a href="{{ path('app_admin_dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors">
+            &larr; Volver al Panel
+        </a>
+        <a href="{{ path('app_admin_producto_nuevo') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors transform hover:-translate-y-0.5">
+            + Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+        <thead>
+            <tr class="text-gray-400 text-xs uppercase bg-gray-50 border-b border-gray-100">
+                <th class="px-6 py-4 font-semibold w-24">Imagen</th>
+                <th class="px-6 py-4 font-semibold">Producto y Marca</th>
+                <th class="px-6 py-4 font-semibold">Precio</th>
+                <th class="px-6 py-4 font-semibold">Local</th>
+                <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="text-sm text-gray-700">
+            {% for producto in productos %}
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        {% if producto.imagen %}
+                            <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="Foto" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm">
+                        {% else %}
+                            <div class="w-12 h-12 rounded-lg bg-pink-50 text-pink-300 flex items-center justify-center text-xl border border-pink-100">🧴</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-bold text-gray-900 block text-base">{{ producto.nombre }}</span>
+                        <span class="text-xs font-bold text-pink-600 uppercase tracking-wider">{{ producto.marca }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-extrabold text-gray-900 text-lg">{{ producto.precio|number_format(2, ',', '.') }}€</span>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-gray-500">
+                        {{ producto.local.nombre }}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{{ path('app_admin_producto_editar', {'id': producto.id}) }}" class="text-blue-500 hover:text-blue-700 font-bold mr-3 transition-colors">Editar</a>
+                        <a href="{{ path('app_admin_producto_eliminar', {'id': producto.id}) }}" onclick="return confirm('¿Seguro que quieres borrar este producto para siempre?')" class="text-red-500 hover:text-red-700 font-bold transition-colors">Eliminar</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <div class="text-4xl mb-3">🛍️</div>
+                        <p class="font-bold text-lg text-gray-900">No hay productos todavía</p>
+                        <p>Añade el primero para empezar a vender.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

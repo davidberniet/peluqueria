@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mi Perfil | Venus{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto">
+    
+    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex items-center gap-6">
+        <div class="bg-pink-100 text-pink-600 w-20 h-20 rounded-full flex items-center justify-center text-4xl font-extrabold shadow-inner">
+            {{ app.user.nombre|first|upper }}
+        </div>
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900">Hola, {{ app.user.nombre }}</h1>
+            <p class="text-gray-500 font-medium mt-1">{{ app.user.email }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        
+        <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-900">Mis Próximas Citas</h2>
+            <a href="{{ path('app_servicios') }}" class="text-sm font-bold text-white bg-gray-900 hover:bg-pink-500 px-5 py-2.5 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
+                Nueva Cita +
+            </a>
+        </div>
+        
+        <div class="p-8">
+            {% if app.user.citas is empty %}
+                <div class="text-center py-10">
+                    <div class="text-6xl mb-4">📅</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">No tienes citas programadas</h3>
+                    <p class="text-gray-500 mb-8 max-w-md mx-auto">¿Te apetece un cambio de look o un buen tratamiento? Anímate y reserva tu hueco.</p>
+                    <a href="{{ path('app_servicios') }}" class="inline-block bg-pink-50 text-pink-600 font-bold px-8 py-3.5 rounded-xl hover:bg-pink-100 transition-colors border border-pink-100">
+                        Ver Catálogo de Servicios
+                    </a>
+                </div>
+            {% else %}
+                <div class="space-y-4">
+                    {% for cita in app.user.citas %}
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 border border-gray-100 rounded-2xl hover:border-pink-200 hover:shadow-md transition-all group">
+                            
+                            <div class="flex items-center gap-5">
+                                <div class="bg-gray-50 p-3 rounded-xl text-center min-w-[5rem] group-hover:bg-pink-50 transition-colors">
+                                    <span class="block text-xs font-bold text-gray-400 uppercase">{{ cita.fechaInicio|date('M') }}</span>
+                                    <span class="block text-xl font-extrabold text-gray-900 group-hover:text-pink-600">{{ cita.fechaInicio|date('d') }}</span>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="text-lg font-bold text-gray-900">
+                                        {% for servicio in cita.servicios %}
+                                            {{ servicio.nombre }}{% if not loop.last %} + {% endif %}
+                                        {% else %}
+                                            Cita General
+                                        {% endfor %}
+                                    </h4>
+                                    <p class="text-sm text-gray-500 font-medium mt-1">
+                                        ⏰ {{ cita.fechaInicio|date('H:i') }} - {{ cita.fechaFin|date('H:i') }} | 
+                                        Estado: <span class="font-bold uppercase text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">{{ cita.estado }}</span>
+                                    </p>
+                                    
+                                    {% if cita.productos|length > 0 %}
+                                        <div class="mt-3 bg-pink-50 rounded-lg p-3 border border-pink-100">
+                                            <p class="text-xs font-bold text-pink-700 uppercase tracking-wider mb-1">🛍️ Productos reservados para ese día:</p>
+                                            <ul class="text-sm text-gray-700">
+                                                {% for producto in cita.productos %}
+                                                    <li class="font-medium flex justify-between gap-4">
+                                                        <span>• {{ producto.nombre }}</span>
+                                                        <span class="font-bold">+{{ producto.precio }}€</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            
+                            <div class="mt-4 sm:mt-0 sm:text-right">
+                                <a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" 
+                                   onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')"
+                                   class="inline-block text-red-400 hover:text-red-600 text-sm font-bold bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
+                                    Cancelar
+                                </a>
+                            </div>
+                            
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

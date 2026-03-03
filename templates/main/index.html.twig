@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Peluquería Venus | Inicio{% endblock %}
+
+{% block body %}
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden mb-16">
+        <div class="flex flex-col md:flex-row items-center">
+            
+            <div class="p-8 md:p-16 md:w-1/2 flex flex-col justify-center">
+                <span class="text-pink-500 font-bold tracking-wider uppercase text-sm mb-4">Bienvenido a Venus</span>
+                <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+                    Tu estilo, a un <span class="text-pink-500">clic</span> de distancia.
+                </h1>
+                <p class="text-lg text-gray-500 mb-8">
+                    Reserva tu cita en segundos, descubre nuestros tratamientos premium y déjate mimar por los mejores profesionales.
+                </p>
+                <div class="flex gap-4">
+                    <a href="{{ path('app_servicios') }}" class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-pink-500/30 transition duration-300">
+                        Reservar Cita
+                    </a>
+                </div>
+            </div>
+
+            <div class="md:w-1/2 bg-gray-200 h-64 md:h-full min-h-[400px] w-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');">
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+            <div class="text-4xl mb-4">✂️</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Estilo Único</h3>
+            <p class="text-gray-500">Nuestros estilistas están al día con las últimas tendencias para sacar tu mejor versión.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+            <div class="text-4xl mb-4">🧴</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Productos Premium</h3>
+            <p class="text-gray-500">Solo trabajamos con marcas top del mercado para cuidar la salud de tu cabello.</p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+            <div class="text-4xl mb-4">📱</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Reserva 24/7</h3>
+            <p class="text-gray-500">Olvídate de llamar por teléfono. Mira nuestra agenda y elige tu hueco desde el móvil.</p>
+        </div>
+
+    </div>
+{% endblock %}

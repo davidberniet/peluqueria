@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nuestros Productos | Venus{% endblock %}
+
+{% block body %}
+<div class="text-center mb-12">
+    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">Productos Exclusivos</h1>
+    <p class="text-lg text-gray-500 max-w-2xl mx-auto">Cuida tu cabello y tu piel en casa con los mismos productos profesionales que usamos en el salón.</p>
+</div>
+
+{% if productos is empty %}
+    <div class="bg-white rounded-3xl p-10 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
+        <div class="text-5xl mb-4">🛍️</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Tienda en preparación</h2>
+        <p class="text-gray-500">Estamos llenando las estanterías con los mejores productos. ¡Vuelve pronto!</p>
+    </div>
+{% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for producto in productos %}
+            <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 flex flex-col h-full group">
+                
+                <div class="h-64 bg-white flex items-center justify-center relative overflow-hidden p-6">
+                    {% if producto.imagen %}
+                        <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="{{ producto.nombre }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
+                    {% else %}
+                        <div class="text-7xl group-hover:scale-110 transition-transform duration-500">🧴</div>
+                    {% endif %}
+                    
+                    <div class="absolute top-4 right-4 bg-pink-100 text-pink-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm z-10">
+                        {{ producto.marca }}
+                    </div>
+                </div>
+                
+                <div class="p-8 flex-grow flex flex-col">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ producto.nombre }}</h3>
+                    <p class="text-gray-500 mb-6 flex-grow text-sm line-clamp-3">{{ producto.descripcion|default('Añade este producto a tu próxima cita y llévatelo a casa tras tu tratamiento en el salón.') }}</p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-between mt-auto pt-6 border-t border-gray-50 gap-4">
+                        <div class="w-full sm:w-auto text-center sm:text-left">
+                            <p class="text-3xl font-extrabold text-gray-900">{{ producto.precio|number_format(2, ',', '.') }}€</p>
+                        </div>
+                        
+                        {% if app.user %}
+                            <a href="{{ path('app_producto_add_cita', {'id': producto.id}) }}" class="w-full sm:w-auto text-center bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-5 rounded-xl transition-colors shadow-md">
+                                Añadir a mi cita
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="w-full sm:w-auto text-center bg-pink-50 text-pink-700 hover:bg-pink-100 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-pink-100">
+                                Comprar
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catálogo de Servicios | Venus{% endblock %}
+
+{% block body %}
+<div class="text-center mb-12">
+    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">Nuestros Servicios</h1>
+    <p class="text-lg text-gray-500 max-w-2xl mx-auto">Descubre todo lo que podemos hacer por ti con las mejores técnicas y productos de primera.</p>
+</div>
+
+{% if servicios is empty %}
+    <div class="bg-white rounded-3xl p-10 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
+        <div class="text-5xl mb-4">💇‍♀️</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Próximamente...</h2>
+        <p class="text-gray-500">Estamos preparando nuestro catálogo de servicios. ¡Vuelve pronto!</p>
+        
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                <p class="text-sm text-yellow-800 font-bold">👋 Hola Jefe: Tienes que entrar en tu base de datos y añadir servicios (asegúrate de poner 'activo' en 1) para que salgan aquí.</p>
+            </div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for servicio in servicios %}
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden group flex flex-col h-full">
+                
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-50 rounded-full group-hover:bg-pink-100 transition-colors z-0"></div>
+                
+                <div class="relative z-10 flex-grow flex flex-col">
+                    
+                    <div class="mb-4">
+                        <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider text-pink-700 bg-pink-100 rounded-full shadow-sm">
+                            {{ servicio.categoria }}
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ servicio.nombre }}</h3>
+                    
+                    <div class="flex items-end justify-between mt-auto pt-6 border-t border-gray-50">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Precio</p>
+                            <p class="text-3xl font-extrabold text-gray-900">{{ servicio.precio }}€</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Tiempo</p>
+                            <p class="text-lg font-bold text-gray-700">{{ servicio.duration }} min</p>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="mt-6 block w-full text-center bg-gray-900 hover:bg-pink-500 text-white font-bold py-3.5 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
+                        Reservar
+                    </a>    
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
