@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background: #f9f9f9;
+				margin: 0;
+				padding: 0;
+			}
+			.container {
+				max-width: 520px;
+				margin: 40px auto;
+				background: white;
+				border-radius: 16px;
+				overflow: hidden;
+				box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+			}
+			.header {
+				background: #db2777;
+				padding: 32px 24px;
+				text-align: center;
+			}
+			.header h1 {
+				color: white;
+				margin: 0;
+				font-size: 24px;
+			}
+			.header p {
+				color: #fce7f3;
+				margin: 8px 0 0;
+				font-size: 14px;
+			}
+			.body {
+				padding: 32px 24px;
+			}
+			.body p {
+				color: #374151;
+				font-size: 15px;
+				line-height: 1.6;
+				margin: 0 0 16px;
+			}
+			.cita-card {
+				background: #fdf2f8;
+				border: 1px solid #fbcfe8;
+				border-radius: 12px;
+				padding: 20px 24px;
+				margin: 24px 0;
+			}
+			.cita-card .fila {
+				display: flex;
+				justify-content: space-between;
+				padding: 8px 0;
+				border-bottom: 1px solid #fbcfe8;
+				font-size: 14px;
+			}
+			.cita-card .fila:last-child {
+				border-bottom: none;
+			}
+			.cita-card .fila span:first-child {
+				color: #9ca3af;
+				font-weight: 600;
+			}
+			.cita-card .fila span:last-child {
+				color: #111827;
+				font-weight: 700;
+			}
+			.footer {
+				background: #f3f4f6;
+				padding: 20px 24px;
+				text-align: center;
+			}
+			.footer p {
+				color: #9ca3af;
+				font-size: 12px;
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>✂️ Venus Peluquería</h1>
+				<p>Recordatorio de tu cita</p>
+			</div>
+			<div class="body">
+				<p>Hola,
+					<strong>{{ cita.usuario.nombre }}</strong>
+					👋</p>
+				<p>Te recordamos que mañana tienes una cita en Venus. ¡Te esperamos!</p>
+
+				<div class="cita-card">
+					<div class="fila">
+						<span>📅 Día</span>
+						<span>{{ cita.fechaInicio|date('d/m/Y') }}</span>
+					</div>
+					<div class="fila">
+						<span>🕐 Hora</span>
+						<span>{{ cita.fechaInicio|date('H:i') }}</span>
+					</div>
+					<div class="fila">
+						<span>✂️ Servicio</span>
+						<span>
+							{% for servicio in cita.servicios %}
+								{{ servicio.nombre }}
+								{% if not loop.last %}
+									+
+								{% endif %}
+							{% endfor %}
+						</span>
+					</div>
+					<div class="fila">
+						<span>⏱️ Duración</span>
+						<span>
+							{% set duracionTotal = 0 %}
+							{% for servicio in cita.servicios %}
+								{% set duracionTotal = duracionTotal + servicio.duration %}
+							{% endfor %}
+							{{ duracionTotal }}
+							min
+						</span>
+					</div>
+				</div>
+
+				<p>Si tienes alguna pregunta puedes contactarnos directamente. ¡Hasta mañana!</p>
+			</div>
+			<div class="footer">
+				<p>Venus Peluquería · Este es un mensaje automático, no respondas a este email.</p>
+			</div>
+		</div>
+	</body>
+</html>

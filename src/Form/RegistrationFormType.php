@@ -11,6 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -34,13 +35,37 @@ class RegistrationFormType extends AbstractType
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Please enter a password',
+                        'message' => 'Por favor, introduce una contraseña',
                     ]),
                     new Length([
-                        'min' => 6,
-                        'minMessage' => 'Your password should be at least {{ limit }} characters',
+                        'min' => 8,
+                        'minMessage' => 'Tu contraseña debe tener al menos {{ limit }} caracteres',
                         // max length allowed by Symfony for security reasons
-                        'max' => 4096,
+                        'max' => 20,
+                    ]),
+                    new Regex([
+                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                        'message' => 'La contraseña debe incluir al menos una letra mayúscula, una minúscula y un número.',
+                    ]),
+                ],
+            ])
+            ->add('telefono', null, [
+                'label' => 'Teléfono',
+                'attr' => [
+                    'placeholder' => 'Introduce tu número de teléfono',
+                ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Por favor, introduce un número de teléfono',
+                    ]),
+                    new Length([
+                        'min' => 9,
+                        'minMessage' => 'El número de teléfono debe tener al menos {{ limit }} caracteres',
+                        'max' => 20,
+                    ]),
+                    new Regex([
+                        'pattern' => '/^\+?[0-9]+$/',
+                        'message' => 'El número de teléfono solo puede contener números y el símbolo + al inicio.',
                     ]),
                 ],
             ])

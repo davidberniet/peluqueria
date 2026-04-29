@@ -1,0 +1,207 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mi Perfil | Venus
+{% endblock %}
+
+{% block body %}
+	<div
+		class="max-w-4xl mx-auto my-10 px-4">
+
+		{# ===== CABECERA ===== #}
+		<div class="mb-8">
+			<h1 class="text-3xl font-extrabold text-gray-900">Mi Perfil</h1>
+			<p class="text-gray-500 mt-1">Gestiona tus datos y consulta tu historial de citas.</p>
+		</div>
+
+		{# ===== ESTADÍSTICAS ===== #}
+		<div class="grid grid-cols-2 gap-4 mb-8">
+			<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+				<div class="bg-pink-100 p-4 rounded-xl mr-4">
+					<span class="text-2xl">✂️</span>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Visitas</p>
+					<p class="text-3xl font-bold text-gray-900">{{ totalCitas }}</p>
+				</div>
+			</div>
+			<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+				<div class="bg-green-100 p-4 rounded-xl mr-4">
+					<span class="text-2xl">💶</span>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total gastado</p>
+					<p class="text-3xl font-bold text-gray-900">{{ totalGastado|number_format(2, ',', '.') }}€</p>
+				</div>
+			</div>
+		</div>
+
+		{# ===== DATOS PERSONALES ===== #}
+		<div id="perfil" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+			<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+				<span class="text-2xl">👤</span>
+				<div>
+					<h2 class="text-lg font-bold text-gray-900">Mis Datos</h2>
+					<p class="text-gray-400 text-sm">Actualiza tu información personal.</p>
+				</div>
+			</div>
+			<div class="p-6">
+				{% for msg in app.flashes('success_perfil') %}
+					<div class="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-3 rounded-xl">
+						✅
+						{{ msg }}
+					</div>
+				{% endfor %}
+
+				{{ form_start(formPerfil, {'attr': {'class': 'flex flex-col gap-4'}}) }}
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Nombre</label>
+						{{ form_widget(formPerfil.nombre, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400'}}) }}
+						{{ form_errors(formPerfil.nombre) }}
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Email</label>
+						{{ form_widget(formPerfil.email, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400'}}) }}
+						{{ form_errors(formPerfil.email) }}
+					</div>
+				</div>
+				<div class="md:w-1/2">
+					<label class="block text-xs font-semibold text-gray-500 mb-1">Teléfono</label>
+					{{ form_widget(formPerfil.telefono, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400', 'placeholder': 'Ej: 612 345 678'}}) }}
+					{{ form_errors(formPerfil.telefono) }}
+				</div>
+				<div class="flex justify-end">
+					<button type="submit" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-8 rounded-xl shadow-sm transition-colors text-sm">
+						Guardar cambios
+					</button>
+				</div>
+				{{ form_end(formPerfil) }}
+			</div>
+		</div>
+
+		{# ===== CAMBIAR CONTRASEÑA ===== #}
+		<div id="password" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+			<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+				<span class="text-2xl">🔒</span>
+				<div>
+					<h2 class="text-lg font-bold text-gray-900">Cambiar Contraseña</h2>
+					<p class="text-gray-400 text-sm">Por seguridad necesitamos tu contraseña actual.</p>
+				</div>
+			</div>
+			<div class="p-6">
+				{% for msg in app.flashes('success_password') %}
+					<div class="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-3 rounded-xl">
+						✅
+						{{ msg }}
+					</div>
+				{% endfor %}
+				{% for msg in app.flashes('error_password') %}
+					<div class="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl">
+						❌
+						{{ msg }}
+					</div>
+				{% endfor %}
+
+				{{ form_start(formPassword, {'attr': {'class': 'flex flex-col gap-4'}}) }}
+				<div>
+					<label class="block text-xs font-semibold text-gray-500 mb-1">Contraseña actual</label>
+					{{ form_widget(formPassword.passwordActual, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400'}}) }}
+					{{ form_errors(formPassword.passwordActual) }}
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Nueva contraseña</label>
+						{{ form_widget(formPassword.nuevaPassword.first, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400'}}) }}
+						{{ form_errors(formPassword.nuevaPassword.first) }}
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Repetir nueva contraseña</label>
+						{{ form_widget(formPassword.nuevaPassword.second, {'attr': {'class': 'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400'}}) }}
+						{{ form_errors(formPassword.nuevaPassword.second) }}
+					</div>
+				</div>
+				<div class="flex justify-end">
+					<button type="submit" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-8 rounded-xl shadow-sm transition-colors text-sm">
+						Cambiar contraseña
+					</button>
+				</div>
+				{{ form_end(formPassword) }}
+			</div>
+		</div>
+
+		{# ===== HISTORIAL DE CITAS ===== #}
+		<div id="historial" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+			<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+				<span class="text-2xl">📅</span>
+				<div>
+					<h2 class="text-lg font-bold text-gray-900">Mis Citas</h2>
+					<p class="text-gray-400 text-sm">Tu historial completo de reservas.</p>
+				</div>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-left border-collapse">
+					<thead>
+						<tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
+							<th class="px-6 py-4 font-semibold">Fecha</th>
+							<th class="px-6 py-4 font-semibold">Servicio</th>
+							<th class="px-6 py-4 font-semibold">Precio</th>
+							<th class="px-6 py-4 font-semibold">Estado</th>
+							<th class="px-6 py-4 font-semibold text-right">Acción</th>
+						</tr>
+					</thead>
+					<tbody class="text-sm text-gray-700">
+						{% for cita in citas %}
+							<tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+								<td class="px-6 py-4 font-semibold text-pink-600">
+									{{ cita.fechaInicio|date('d/m/Y') }}<br>
+									<span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
+								</td>
+								<td class="px-6 py-4">
+									{% for servicio in cita.servicios %}
+										{{ servicio.nombre }}
+										{% if not loop.last %}
+											+
+										{% endif %}
+									{% endfor %}
+								</td>
+								<td class="px-6 py-4 font-bold text-gray-900">
+									{% set precio = 0 %}
+									{% for servicio in cita.servicios %}
+										{% set precio = precio + servicio.getPrecio() %}
+									{% endfor %}
+									{{ precio|number_format(2, ',', '.') }}€
+								</td>
+								<td class="px-6 py-4">
+									{% if cita.estado == 'Pendiente' %}
+										<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">Pendiente</span>
+									{% elseif cita.estado == 'Confirmada' %}
+										<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">Confirmada</span>
+									{% else %}
+										<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">Cancelada</span>
+									{% endif %}
+								</td>
+								<td class="px-6 py-4 text-right">
+									{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
+										<a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
+											Cancelar
+										</a>
+									{% else %}
+										<span class="text-gray-300 text-xs">—</span>
+									{% endif %}
+								</td>
+							</tr>
+						{% else %}
+							<tr>
+								<td colspan="5" class="px-6 py-8 text-center text-gray-500">
+									Aún no tienes citas.
+									<a href="{{ path('app_servicios') }}" class="text-pink-600 font-bold hover:underline">¡Reserva la primera!</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</div>
+{% endblock %}

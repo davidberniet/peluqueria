@@ -1,175 +1,236 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservar {{ servicio.nombre }} | Venus{% endblock %}
+{% block title %}Reservar
+	{{ servicio.nombre }}
+	| Venus
+{% endblock %}
 
 {% block body %}
-<div class="max-w-3xl mx-auto my-10">
-    
-    <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden relative">
-        
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center relative">
-            <h2 class="text-xl font-bold text-gray-900 w-full text-center">
-                {{ 'now'|date('F Y')|replace({'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo', 'April': 'Abril', 'May': 'Mayo', 'June': 'Junio', 'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre', 'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'}) }}
-            </h2>
-            <a href="{{ path('app_servicios') }}" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </a>
-        </div>
+	<div class="max-w-3xl mx-auto my-10">
 
-        <div class="flex items-center justify-between p-4 bg-white">
-            <div class="flex overflow-x-auto gap-3 py-2 px-1 scrollbar-hide w-full justify-start md:justify-center">
-                {% set start_date = 'now'|date('Y-m-d') %}
-                {% for i in 0..14 %}
-                    {% set current_date = start_date|date_modify('+' ~ i ~ ' days') %}
-                    <div class="day-pill min-w-[70px] p-2 border border-gray-200 text-gray-800 rounded-xl text-center cursor-pointer hover:border-pink-600 hover:text-pink-600 transition-all"
-                         data-date="{{ current_date|date('Y-m-d') }}">
-                        <span class="block text-xs font-medium mb-1">{{ current_date|date('D')|replace({'Mon':'Lun', 'Tue':'Mar', 'Wed':'Mié', 'Thu':'Jue', 'Fri':'Vie', 'Sat':'Sáb', 'Sun':'Dom'}) }}</span>
-                        <span class="block text-2xl font-extrabold">{{ current_date|date('d') }}</span>
-                        <div class="h-1 w-4 bg-gray-200 mx-auto rounded mt-1 line-indicator"></div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+		<div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden relative">
 
-        <div class="flex items-center justify-between p-4 bg-white border-b border-gray-100 bg-gray-50 min-h-[80px]">
-            <div id="contenedor-horas" class="flex overflow-x-auto gap-2 py-2 w-full justify-start md:justify-center">
-                <p class="text-gray-500 py-2 font-medium text-sm">Selecciona un día arriba para ver las horas disponibles</p>
-            </div>
-        </div>
+			<div class="p-6 border-b border-gray-100 flex justify-between items-center relative">
+				<h2 class="text-xl font-bold text-gray-900 w-full text-center">Elige el día de tu cita</h2>
+				<a href="{{ path('app_servicios') }}" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 transition-colors">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</a>
+			</div>
 
-        <div class="p-6 bg-white">
-            <div class="flex justify-between items-start border-b border-gray-100 pb-6">
-                <div>
-                    <h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm flex items-center gap-2">
-                        {{ servicio.nombre }}
-                        <span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">TOP</span>
-                    </h3>
-                    <p class="text-gray-500 text-sm mt-3 flex items-center justify-between">
-                        <span>Empleado: Cualquiera</span>
-                    </p>
-                </div>
-                <div class="text-right ml-4">
-                    <p class="font-bold text-gray-900">{{ servicio.precio|number_format(2, ',', '.') }} €</p>
-                    <p class="text-gray-400 text-xs mt-1" id="resumen-hora">Selecciona hora</p>
-                </div>
-            </div>
-        </div>
+			<div class="flex overflow-x-auto gap-3 py-2 px-1 w-full justify-start">
+				{% set start_date = date('now', 'Europe/Madrid') %}
+				{% for i in 0..14 %}
+					{% set current_date = start_date|date_modify('+' ~ i ~ ' days') %}
+					<div class="day-pill min-w-[75px] p-2 border border-gray-200 text-gray-800 rounded-xl text-center cursor-pointer hover:border-pink-600 hover:text-pink-600 transition-all shrink-0" data-date="{{ current_date|date('Y-m-d') }}">
+						<span class="block text-xs font-medium mb-1">
+							{{ current_date|date('D')|replace({'Mon':'Lun','Tue':'Mar','Wed':'Mié','Thu':'Jue','Fri':'Vie','Sat':'Sáb','Sun':'Dom'}) }}
+						</span>
+						<span class="block text-2xl font-extrabold">{{ current_date|date('d') }}</span>
+						<span class="block text-[10px] font-bold text-gray-400 mt-0.5 uppercase">
+							{{ current_date|date('M')|replace({'Jan':'Ene','Apr':'Abr','May':'May','Jun':'Jun','Jul':'Jul','Aug':'Ago','Sep':'Sep','Oct':'Oct','Nov':'Nov','Dec':'Dic'}) }}
+						</span>
+						<div class="h-1 w-4 bg-gray-200 mx-auto rounded mt-1 line-indicator"></div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
 
-        <div class="bg-white border-t border-gray-100 p-6">
-            {{ form_start(form, {'attr': {'class': 'flex flex-col md:flex-row justify-between items-center gap-4', 'id': 'form-reserva'}}) }}
-                
-                <div class="hidden">
-                    {{ form_widget(form.fechaInicio) }}
-                    {{ form_widget(form.local) }}
-                    {{ form_widget(form.empleado) }}
-                    {{ form_widget(form.notas) }}
-                </div>
+		<div class="flex items-center justify-between p-4 bg-white border-b border-gray-100 bg-gray-50 min-h-[80px]">
+			<div id="contenedor-horas" class="flex overflow-x-auto gap-2 py-2 w-full justify-start md:justify-center">
+				<p class="text-gray-500 py-2 font-medium text-sm">Selecciona un día arriba para ver las horas disponibles</p>
+			</div>
+		</div>
 
-                <div class="w-full md:w-auto text-right md:text-left flex flex-col items-end md:items-start flex-grow pr-4">
-                    <p class="text-gray-500 text-sm">Total : <span class="text-3xl font-extrabold text-gray-900 ml-2">{{ servicio.precio|number_format(2, ',', '.') }} €</span></p>
-                    <p class="text-gray-400 text-xs mt-1">{{ servicio.duration }} min</p>
-                </div>
-                
-                <button type="button" id="btn-submit-fake" class="w-full md:w-1/2 bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-colors text-lg">
-                    Elige Fecha y Hora
-                </button>
+		<div class="p-6 bg-white">
+			<div class="flex justify-between items-start border-b border-gray-100 pb-6">
+				<div>
+					<h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm flex items-center gap-2">
+						{{ servicio.nombre }}
+						<span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">TOP</span>
+					</h3>
+					<p class="text-gray-500 text-sm mt-3 flex items-center justify-between">
+						<span>Empleado: Cualquiera</span>
+					</p>
+				</div>
+				<div class="text-right ml-4">
+					<p class="font-bold text-gray-900">{{ servicio.precio|number_format(2, ',', '.') }}
+						€</p>
+					<p class="text-gray-400 text-xs mt-1" id="resumen-hora">Selecciona hora</p>
+				</div>
+			</div>
+		</div>
 
-                <button type="submit" id="btn-submit-real" class="hidden w-full md:w-1/2 bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-colors text-lg">
-                    Confirmar Reserva
-                </button>
-                
-            {{ form_end(form) }}
-        </div>
-    </div>
-</div>
+		<div class="bg-white border-t border-gray-100 p-6">
+			{{ form_start(form, {'attr': {'class': 'flex flex-col md:flex-row justify-between items-center gap-4', 'id': 'form-reserva'}}) }}
+			<div class="hidden">
+				{{ form_widget(form.fechaInicio) }}
+				{{ form_widget(form.local) }}
+				{{ form_widget(form.empleado) }}
+				{{ form_widget(form.notas) }}
+			</div>
+			<div class="w-full md:w-auto text-right md:text-left flex flex-col items-end md:items-start flex-grow pr-4">
+				<p class="text-gray-500 text-sm">Total :
+					<span class="text-3xl font-extrabold text-gray-900 ml-2">{{ servicio.precio|number_format(2, ',', '.') }}
+						€</span>
+				</p>
+				<p class="text-gray-400 text-xs mt-1">{{ servicio.duration|default(30) }}
+					min</p>
+			</div>
+			<button type="button" id="btn-submit-fake" class="w-full md:w-1/2 bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-colors text-lg">
+				Elige Fecha y Hora
+			</button>
+			<button type="submit" id="btn-submit-real" class="hidden w-full md:w-1/2 bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-colors text-lg">
+				Confirmar Reserva
+			</button>
+			{{ form_end(form) }}
+		</div>
+	</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let selectedDate = null;
-        let selectedTime = null;
-        
-        const horasOcupadas = {{ horasOcupadas|default('{}')|raw }};
-        const horasTotales = ['10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00'];
-        
-        const inputFecha = document.getElementById('cita_fechaInicio'); 
-        const contenedorHoras = document.getElementById('contenedor-horas');
-        const resumenHora = document.getElementById('resumen-hora');
-        const btnFake = document.getElementById('btn-submit-fake');
-        const btnReal = document.getElementById('btn-submit-real');
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+let selectedDate = null;
+let selectedTime = null;
 
-        // Lógica al hacer clic en un DÍA
-        document.querySelectorAll('.day-pill').forEach(pill => {
-            pill.addEventListener('click', function() {
-                // Limpiar estilo de los demás días (ahora en rosa)
-                document.querySelectorAll('.day-pill').forEach(p => {
-                    p.classList.remove('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
-                    p.classList.add('border-gray-200', 'text-gray-800');
-                    p.querySelector('.line-indicator').classList.replace('bg-pink-300', 'bg-gray-200');
-                });
-                // Pintar el día clickado de rosa corporativo
-                this.classList.remove('border-gray-200', 'text-gray-800');
-                this.classList.add('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
-                this.querySelector('.line-indicator').classList.replace('bg-gray-200', 'bg-pink-300');
-                
-                selectedDate = this.dataset.date;
-                selectedTime = null;
-                
-                renderizarHorasDisponibles(selectedDate);
-                comprobarYActualizar();
-            });
-        });
+const horasOcupadas = {{ horasOcupadas|default('{}')|raw }};
+// ✅ NUEVO: array de fechas bloqueadas ['2025-08-15', ...]
+const diasBloqueados = {{ diasBloqueados|default('[]')|raw }};
 
-        // Función que dibuja las pastillas de las horas disponibles
-        function renderizarHorasDisponibles(fechaSeleccionada) {
-            contenedorHoras.innerHTML = '';
-            
-            const ocupadasHoy = horasOcupadas[fechaSeleccionada] || [];
-            let hayHorasLibres = false;
+const horasTotales = {{ slotsTotales|raw }};
 
-            horasTotales.forEach(hora => {
-                if (!ocupadasHoy.includes(hora)) {
-                    hayHorasLibres = true;
-                    const div = document.createElement('div');
-                    // Hover de la hora en rosa
-                    div.className = 'time-pill px-5 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-md cursor-pointer hover:border-pink-600 hover:text-pink-600 font-medium transition-all shadow-sm';
-                    div.dataset.time = hora;
-                    div.textContent = hora;
-                    
-                    div.addEventListener('click', function() {
-                        document.querySelectorAll('.time-pill').forEach(p => {
-                            p.classList.remove('bg-pink-600', 'text-white', 'shadow-md');
-                            p.classList.add('border-gray-200', 'text-gray-700', 'bg-white');
-                        });
-                        this.classList.remove('border-gray-200', 'text-gray-700', 'bg-white');
-                        this.classList.add('bg-pink-600', 'text-white', 'shadow-md');
-                        
-                        selectedTime = this.dataset.time;
-                        comprobarYActualizar();
-                    });
-                    
-                    contenedorHoras.appendChild(div);
-                }
-            });
+const inputFecha = document.getElementById('cita_fechaInicio');
+const contenedorHoras = document.getElementById('contenedor-horas');
+const resumenHora = document.getElementById('resumen-hora');
+const btnFake = document.getElementById('btn-submit-fake');
+const btnReal = document.getElementById('btn-submit-real');
 
-            if (!hayHorasLibres) {
-                contenedorHoras.innerHTML = '<p class="text-red-500 font-bold py-2 text-sm">Todo reservado para este día. Prueba con otro.</p>';
-            }
-        }
+// ✅ NUEVO: bloquear visualmente los días antes de asignar listeners
+document.querySelectorAll('.day-pill').forEach(pill => {
+const fecha = pill.dataset.date;
 
-        function comprobarYActualizar() {
-            if (selectedDate && selectedTime) {
-                inputFecha.value = selectedDate + 'T' + selectedTime;
-                resumenHora.textContent = selectedDate.split('-').reverse().join('/') + ' a las ' + selectedTime;
-                
-                btnFake.classList.add('hidden');
-                btnReal.classList.remove('hidden');
-            } else {
-                resumenHora.textContent = 'Selecciona hora';
-                btnFake.classList.remove('hidden');
-                btnReal.classList.add('hidden');
-                inputFecha.value = '';
-            }
-        }
-    });
-</script>
+if (diasBloqueados.includes(fecha) || diaSemanaBloqueadoPorRegla(fecha)) {
+
+pill.classList.add('opacity-40', 'cursor-not-allowed', 'line-through', 'bg-gray-100', 'border-gray-200');
+pill.classList.remove('hover:border-pink-600', 'hover:text-pink-600', 'cursor-pointer');
+pill.setAttribute('title', 'No disponible');
+pill.dataset.bloqueado = 'true'; // marca para el listener
+}
+
+});
+
+// Lógica al hacer clic en un DÍA
+document.querySelectorAll('.day-pill').forEach(pill => {
+pill.addEventListener('click', function () { // ✅ NUEVO: ignorar días bloqueados
+if (this.dataset.bloqueado === 'true') 
+return;
+
+
+
+document.querySelectorAll('.day-pill').forEach(p => {
+p.classList.remove('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
+p.classList.add('border-gray-200', 'text-gray-800');
+p.querySelector('.line-indicator').classList.replace('bg-pink-300', 'bg-gray-200');
+});
+
+this.classList.remove('border-gray-200', 'text-gray-800');
+this.classList.add('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
+this.querySelector('.line-indicator').classList.replace('bg-gray-200', 'bg-pink-300');
+
+selectedDate = this.dataset.date;
+selectedTime = null;
+
+renderizarHorasDisponibles(selectedDate);
+comprobarYActualizar();
+});
+});
+
+function renderizarHorasDisponibles(fechaSeleccionada) {
+contenedorHoras.innerHTML = '';
+
+const ocupadasHoy = horasOcupadas[fechaSeleccionada] || [];
+let hayHorasLibres = false;
+
+const ahora = new Date();
+const hoyString = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
+const horaActual = ahora.getHours();
+const minutoActual = ahora.getMinutes();
+
+horasTotales.forEach(hora => {
+let horaYaPasada = false;
+
+if (fechaSeleccionada === hoyString) {
+const [horaTurno, minutoTurno] = hora.split(':');
+if (parseInt(horaTurno) < horaActual || (parseInt(horaTurno) === horaActual && parseInt(minutoTurno) <= minutoActual)) {
+horaYaPasada = true;
+}
+}
+
+if (! ocupadasHoy.includes(hora) && ! horaYaPasada && !horaBloquedaPorRegla(fechaSeleccionada, hora)) {
+hayHorasLibres = true;
+const div = document.createElement('div');
+div.className = 'time-pill px-5 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-md cursor-pointer hover:border-pink-600 hover:text-pink-600 font-medium transition-all shadow-sm';
+div.dataset.time = hora;
+div.textContent = hora;
+
+div.addEventListener('click', function () {
+document.querySelectorAll('.time-pill').forEach(p => {
+p.classList.remove('bg-pink-600', 'text-white', 'shadow-md');
+p.classList.add('border-gray-200', 'text-gray-700', 'bg-white');
+});
+this.classList.remove('border-gray-200', 'text-gray-700', 'bg-white');
+this.classList.add('bg-pink-600', 'text-white', 'shadow-md');
+
+selectedTime = this.dataset.time;
+comprobarYActualizar();
+});
+
+contenedorHoras.appendChild(div);
+}
+});
+
+if (! hayHorasLibres) {
+contenedorHoras.innerHTML = '<p class="text-red-500 font-bold py-2 text-sm">No quedan horas disponibles para este día.</p>';
+}
+}
+
+function comprobarYActualizar() {
+if (selectedDate && selectedTime) {
+inputFecha.value = selectedDate + 'T' + selectedTime;
+resumenHora.textContent = selectedDate.split('-').reverse().join('/') + ' a las ' + selectedTime;
+btnFake.classList.add('hidden');
+btnReal.classList.remove('hidden');
+} else {
+resumenHora.textContent = 'Selecciona hora';
+btnFake.classList.remove('hidden');
+btnReal.classList.add('hidden');
+inputFecha.value = '';
+}
+}
+});
+
+
+const reglasHorario = {{ reglasHorario|default('[]')|raw }};
+// Ejemplo de lo que llega:
+// [{"dia":0,"desde":null,"hasta":null}, {"dia":6,"desde":"16:00","hasta":"19:00"}]
+
+// Recibe el string 'YYYY-MM-DD', devuelve true si hay regla de día completo
+function diaSemanaBloqueadoPorRegla(fechaStr) {
+const diaSemanaJS = new Date(fechaStr + 'T12:00:00').getDay(); // T12 evita bugs de timezone
+return reglasHorario.some(r => r.dia === diaSemanaJS && r.desde === null);
+}
+
+// Devuelve true si una hora 'HH:MM' está bloqueada por franja en ese día de la semana
+function horaBloquedaPorRegla(fechaStr, hora) {
+const diaSemanaJS = new Date(fechaStr + 'T12:00:00').getDay();
+return reglasHorario.some(r => {
+if (r.dia !== diaSemanaJS || r.desde === null) 
+return false;
+
+
+
+return hora >= r.desde && hora < r.hasta;
+});
+}
+	</script>
 {% endblock %}

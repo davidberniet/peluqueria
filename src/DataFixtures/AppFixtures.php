@@ -6,18 +6,29 @@ use App\Entity\Servicio;
 use App\Entity\Local;
 use App\Entity\Producto;
 use App\Entity\Horario;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+
+    private UserPasswordHasherInterface $hasher;
+
+    // Encriptacion contraseñas
+    public function __construct(UserPasswordHasherInterface $hasher)
+    {
+        $this->hasher = $hasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
         // 1. LOCAL
         $local = new Local();
         $local->setNombre('Peluquería Venus - Alcalá la Real');
         $local->setDireccion('Calle Ecuador, 21');
-        $local->setCiudad('Alcalá la Real'); 
+        $local->setCiudad('Alcalá la Real');
         $manager->persist($local);
 
         // 2. SERVICIOS
@@ -36,10 +47,10 @@ class AppFixtures extends Fixture
             $servicio->setPrecio($datos[2]);
             $servicio->setCategoria($datos[3]);
             $servicio->setActivo(true);
-            
+
             //  Vinculamos el servicio al local
-            $servicio->setLocal($local); 
-            
+            $servicio->setLocal($local);
+
             $manager->persist($servicio);
         }
 
@@ -57,10 +68,10 @@ class AppFixtures extends Fixture
             $producto->setDescripcion($datos[2]);
             $producto->setPrecio($datos[3]);
             $producto->setImagen($datos[4]);
-            
+
             //  Vinculamos el producto al local
-            $producto->setLocal($local); 
-            
+            $producto->setLocal($local);
+
             $manager->persist($producto);
         }
 
@@ -74,14 +85,36 @@ class AppFixtures extends Fixture
         foreach ($diasPrueba as $fechaHora) {
             $horario = new Horario();
             $horario->setHoraApertura(new \DateTime($fechaHora));
-            
+
             // Vinculamos el horario al local
-            $horario->setLocal($local); 
-            
+            $horario->setLocal($local);
+
             $manager->persist($horario);
         }
 
-        // 5. GUARDAR TODO EN BASE DE DATOS
+        // 5. CREAR UN USUARIO (ADMIN)
+
+        $admin = new User();
+        $admin->setEmail('admin@admin.com');
+        $admin->setNombre('Merce');
+        $admin->setRoles(['ROLE_ADMIN']);
+
+        // Encriptamos la contraseña "admin123"
+        $hashedPassword = $this->hasher->hashPassword($admin, 'admin123');
+        $admin->setPassword($hashedPassword);
+
+        $manager->persist($admin);
+
+        // 6. CREAR CLIENTE
+        $client = new User();
+        $client->setEmail('cliente@gmail.com');
+        $client->setNombre('Antonio');
+        $client->setRoles(['ROLE_USER']);
+        $hashedPassword = $this->hasher->hashPassword($client, 'cliente123');
+        $client->setPassword($hashedPassword);
+        $manager->persist($client);
+
+        // 7. GUARDAR TODO EN BASE DE DATOS
         $manager->flush();
     }
 }

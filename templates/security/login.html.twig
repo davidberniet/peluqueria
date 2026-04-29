@@ -1,51 +1,84 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Iniciar Sesión | Venus{% endblock %}
+{% block title %}Iniciar Sesión | Venus
+{% endblock %}
 
 {% block body %}
-<div class="flex items-center justify-center min-h-[70vh]">
-    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
-        
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Bienvenido</h1>
-            <p class="text-gray-500">Accede a tu cuenta de Venus</p>
-        </div>
+	<div class="flex items-center justify-center min-h-[70vh]">
+		<div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
 
-        <form method="post">
-            {% if error %}
-                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6" role="alert">
-                    <p class="text-sm font-medium">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
-                </div>
-            {% endif %}
+			<div class="text-center mb-8">
+				<h1 class="text-3xl font-extrabold text-gray-900 mb-2">Bienvenido</h1>
+				<p class="text-gray-500">Accede a tu cuenta de Venus</p>
+			</div>
 
-            {% if app.user %}
-                <div class="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg text-sm text-center">
-                    Ya estás conectado como <strong>{{ app.user.userIdentifier }}</strong>.<br>
-                    <a href="{{ path('app_logout') }}" class="font-bold underline hover:text-blue-900 mt-2 inline-block">Cerrar sesión</a>
-                </div>
-            {% endif %}
+			<form method="post">
+				{% if error %}
+					<div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6" role="alert">
+						<p class="text-sm font-medium">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+					</div>
+				{% endif %}
 
-            <div class="mb-5">
-                <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">Correo Electrónico</label>
-                {# He cambiado name="username" por name="email" para que coincida con tu Authenticator #}
-                <input type="email" value="{{ last_username }}" name="email" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition bg-gray-50 focus:bg-white" autocomplete="email" placeholder="ejemplo@correo.com" required autofocus>
-            </div>
+				{% if app.user %}
+					<div class="mb-6 p-4 bg-blue-50 text-blue-800 rounded-lg text-sm text-center">
+						Ya estás conectado como
+						<strong>{{ app.user.userIdentifier }}</strong>.<br>
+						<a href="{{ path('app_logout') }}" class="font-bold underline hover:text-blue-900 mt-2 inline-block">Cerrar sesión</a>
+					</div>
+				{% endif %}
 
-            <div class="mb-6">
-                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
-                <input type="password" name="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition bg-gray-50 focus:bg-white" autocomplete="current-password" placeholder="••••••••" required>
-            </div>
+				<div class="mb-5">
+					<label for="username" class="block text-sm font-semibold text-gray-700 mb-2">Correo Electrónico</label>
+					{# He cambiado name="username" por name="email" para que coincida con tu Authenticator #}
+					<input type="email" value="{{ last_username }}" name="email" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition bg-gray-50 focus:bg-white" autocomplete="email" placeholder="ejemplo@correo.com" required autofocus>
+				</div>
 
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+				<div class="mb-6">
+					<label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+					<input type="password" name="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition bg-gray-50 focus:bg-white" autocomplete="current-password" placeholder="••••••••" required>
+				</div>
+				<div class="flex items-center gap-2 mt-3 mb-4">
+					<input type="checkbox" id="toggle-password" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500 cursor-pointer h-4 w-4 transition">
+					<label for="toggle-password" class="text-sm font-semibold text-gray-600 cursor-pointer select-none hover:text-pink-600 transition">
+						Mostrar contraseña
+					</label>
+				</div>
 
-            <button type="submit" class="w-full bg-gray-900 hover:bg-pink-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 mt-2">
-                Iniciar Sesión
-            </button>
-        </form>
-        
-        <div class="mt-8 text-center text-sm text-gray-500">
-            ¿Aún no tienes cuenta? <a href="{{ path('app_register') }}" class="text-pink-600 hover:text-pink-500 font-bold transition">Regístrate aquí</a>
-        </div>
-    </div>
-</div>
+				<div class="flex items-center mb-6">
+					<input type="checkbox" id="remember_me" name="_remember_me" class="w-5 h-5 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"/>
+					<label for="remember_me" class="ml-2 text-sm font-medium text-gray-600 cursor-pointer select-none">Recuérdame en este equipo</label>
+				</div>
+
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+				<button type="submit" class="w-full bg-gray-900 hover:bg-pink-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 mt-2">
+					Iniciar Sesión
+				</button>
+			</form>
+
+			<div class="mt-8 text-center text-sm text-gray-500">
+				¿Aún no tienes cuenta?
+				<a href="{{ path('app_register') }}" class="text-pink-600 hover:text-pink-500 font-bold transition">Regístrate aquí</a>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () { // Seleccionamos el checkbox y el input de la contraseña
+const togglePassword = document.getElementById('toggle-password');
+const passwordInput = document.getElementById('password');
+// <- ¡Asegúrate de poner aquí el ID correcto!
+
+// Si ambos existen en la página, le damos el superpoder
+if (togglePassword && passwordInput) {
+togglePassword.addEventListener('change', function () { // Si el checkbox está marcado, lo cambiamos a texto. Si no, vuelve a ocultarse.
+if (this.checked) {
+passwordInput.type = 'text';
+} else {
+passwordInput.type = 'password';
+}
+});
+}
+});
+	</script>
 {% endblock %}

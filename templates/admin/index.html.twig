@@ -1,131 +1,391 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Panel de Control | Venus{% endblock %}
+{% block title %}Panel de Control | Venus
+{% endblock %}
 
 {% block body %}
-<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-    <div>
-        <h1 class="text-3xl font-extrabold text-gray-900">Panel de Control</h1>
-        <p class="text-gray-500 mt-1">Bienvenido, Jefe. Aquí tienes el resumen de las citas.</p>
-    </div>
-    
-    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-        <a href="{{ path('app_admin_productos') }}" class="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 font-bold py-3 px-5 rounded-xl transition-colors flex items-center justify-center gap-2">
-            🛍️ Tienda
-        </a>
-        
-        <a href="{{ path('app_admin_servicios') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-5 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
-            ✂️ Servicios
-        </a>
-    </div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-    
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
-        <div class="bg-pink-100 p-4 rounded-xl mr-4">
-            <span class="text-2xl">📅</span>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Citas Hoy</p>
-            <p class="text-3xl font-bold text-gray-900">12</p>
-        </div>
-    </div>
 
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
-        <div class="bg-green-100 p-4 rounded-xl mr-4">
-            <span class="text-2xl">💰</span>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ingresos Aprox.</p>
-            <p class="text-3xl font-bold text-gray-900">340€</p>
-        </div>
-    </div>
+	{# ===== CABECERA ===== #}
+	<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+		<div>
+			<h1 class="text-3xl font-extrabold text-gray-900">Panel de Control</h1>
+			<p class="text-gray-500 mt-1">Bienvenido, Jefe. Aquí tienes el resumen de las citas.</p>
+		</div>
+		<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+			<a href="{{ path('app_admin_productos') }}" class="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 font-bold py-3 px-5 rounded-xl transition-colors flex items-center justify-center gap-2">
+				🛍️ Tienda
+			</a>
+			<a href="{{ path('app_admin_servicios') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-5 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+				✂️ Servicios
+			</a>
+		</div>
+	</div>
 
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
-        <div class="bg-blue-100 p-4 rounded-xl mr-4">
-            <span class="text-2xl">👥</span>
-        </div>
-        <div>
-            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nuevos Clientes</p>
-            <p class="text-3xl font-bold text-gray-900">5</p>
-        </div>
-    </div>
+	{# ===== TARJETAS DE ESTADÍSTICAS ===== #}
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+			<div class="bg-pink-100 p-4 rounded-xl mr-4">
+				<span class="text-2xl">📅</span>
+			</div>
+			<div>
+				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Citas Hoy</p>
+				<p class="text-3xl font-bold text-gray-900">{{ citas_hoy }}</p>
+			</div>
+		</div>
+		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+			<div class="bg-green-100 p-4 rounded-xl mr-4">
+				<span class="text-2xl">💰</span>
+			</div>
+			<div>
+				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ingresos Aprox.</p>
+				<p class="text-3xl font-bold text-gray-900">{{ ingresos_hoy }}€</p>
+			</div>
+		</div>
+		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+			<div class="bg-blue-100 p-4 rounded-xl mr-4">
+				<span class="text-2xl">👥</span>
+			</div>
+			<div>
+				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Clientes Registrados</p>
+				<p class="text-3xl font-bold text-gray-900">{{ total_clientes }}</p>
+			</div>
+		</div>
+	</div>
 
-</div>
+	{# ===== PRÓXIMAS CITAS ===== #}
+	<div id="citas" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+		<div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
+			<h2 class="text-lg font-bold text-gray-900">📅 Próximas Citas</h2>
+			<a href="{{ path('app_admin_citas') }}" class="text-sm font-bold text-pink-600 hover:text-pink-800 transition">Ver todas &rarr;</a>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="w-full text-left border-collapse">
+				<thead>
+					<tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
+						<th class="px-6 py-4 font-semibold">Cliente</th>
+						<th class="px-6 py-4 font-semibold">Servicio</th>
+						<th class="px-6 py-4 font-semibold">Hora</th>
+						<th class="px-6 py-4 font-semibold">Estado</th>
+						<th class="px-6 py-4 font-semibold text-right">Acciones</th>
+					</tr>
+				</thead>
+				<tbody class="text-sm text-gray-700">
+					{% for cita in citas %}
+						<tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+							<td class="px-6 py-4 font-bold text-gray-900">
+								{{ cita.usuario.nombre }}
+								<span class="block text-xs font-normal text-gray-500">{{ cita.usuario.email }}</span>
+								{% if cita.usuario.telefono %}
+									<span class="block text-xs font-semibold text-pink-600 mt-0.5">📞
+										{{ cita.usuario.telefono }}</span>
+								{% endif %}
+							</td>
+							<td class="px-6 py-4">
+								{% for servicio in cita.servicios %}
+									{{ servicio.nombre }}
+									{% if not loop.last %}
+										+
+									{% endif %}
+								{% else %}
+									Cita General
+								{% endfor %}
+							</td>
+							<td class="px-6 py-4 font-semibold text-pink-600">
+								{{ cita.fechaInicio|date('d/m/Y') }}<br>
+								<span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
+							</td>
+							<td class="px-6 py-4">
+								{% if cita.estado == 'Pendiente' %}
+									<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
+								{% elseif cita.estado == 'Confirmada' %}
+									<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
+								{% else %}
+									<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
+								{% endif %}
+							</td>
+							<td class="px-6 py-4 text-right">
+								<div class="flex justify-end gap-2">
+									{% if cita.estado == 'Pendiente' %}
+										<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-100 text-green-600 font-bold px-3 py-1.5 rounded-lg border border-green-200 transition-colors text-xs">
+											Confirmar
+										</a>
+									{% endif %}
+									{% if cita.estado != 'Cancelada' %}
+										<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
+											Cancelar
+										</a>
+									{% endif %}
+								</div>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="5" class="px-6 py-8 text-center text-gray-500">
+								No hay citas programadas. ¡A captar clientes!
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h2 class="text-lg font-bold text-gray-900">Próximas Citas</h2>
-        <a href="#" class="text-sm font-bold text-pink-600 hover:text-pink-800 transition">Ver todas &rarr;</a>
-    </div>
-    
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
-                    <th class="px-6 py-4 font-semibold">Cliente</th>
-                    <th class="px-6 py-4 font-semibold">Servicio</th>
-                    <th class="px-6 py-4 font-semibold">Hora</th>
-                    <th class="px-6 py-4 font-semibold">Estado</th>
-                    <th class="px-6 py-4 font-semibold text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="text-sm text-gray-700">
-                {% for cita in citas %}
-                    <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-bold text-gray-900">
-                            {{ cita.usuario.nombre }}
-                            <span class="block text-xs font-normal text-gray-500">{{ cita.usuario.email }}</span>
-                        </td>
-                        
-                        <td class="px-6 py-4">
-                            {% for servicio in cita.servicios %}
-                                {{ servicio.nombre }}{% if not loop.last %} + {% endif %}
-                            {% else %}
-                                Cita General
-                            {% endfor %}
-                        </td>
-                        
-                        <td class="px-6 py-4 font-semibold text-pink-600">
-                            {{ cita.fechaInicio|date('d/m/Y') }}<br>
-                            <span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
-                        </td>
-                        
-                        <td class="px-6 py-4">
-                            {% if cita.estado == 'Pendiente' %}
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-                            {% elseif cita.estado == 'Confirmada' %}
-                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-                            {% else %}
-                                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-                            {% endif %}
-                        </td>
+	{# ===== SEPARADOR DE SECCIÓN ===== #}
+	<div class="mt-12 mb-6">
+		<h2 class="text-xl font-extrabold text-gray-900">⚙️ Configuración del Negocio</h2>
+		<p class="text-gray-400 text-sm mt-1">Gestiona cuándo y cómo se pueden hacer reservas.</p>
+	</div>
 
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                {% if cita.estado == 'Pendiente' %}
-                                    <a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-100 text-green-600 font-bold px-3 py-1.5 rounded-lg border border-green-200 transition-colors text-xs">
-                                        Confirmar
-                                    </a>
-                                {% endif %}
-                                
-                                {% if cita.estado != 'Cancelada' %}
-                                    <a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
-                                        Cancelar
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                            No hay citas programadas en este momento. ¡A captar clientes!
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+	{# ===== 1. HORARIO BASE ===== #}
+	<div id="horario" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+		<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+			<span class="text-2xl">🕐</span>
+			<div>
+				<h2 class="text-lg font-bold text-gray-900">Horario de Trabajo</h2>
+				<p class="text-gray-400 text-sm">Las franjas en las que se aceptan reservas. Puedes tener varias (mañana y tarde).</p>
+			</div>
+		</div>
+		<div
+			class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+			{# Formulario añadir franja #}
+			<div>
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Añadir franja horaria</h3>
+				<form method="POST" action="{{ path('admin_horario_nuevo') }}" class="flex flex-col gap-3">
+					<div class="grid grid-cols-2 gap-3">
+						<div>
+							<label class="block text-xs font-semibold text-gray-500 mb-1">Apertura</label>
+							<input type="time" name="hora_apertura" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+						</div>
+						<div>
+							<label class="block text-xs font-semibold text-gray-500 mb-1">Cierre</label>
+							<input type="time" name="hora_cierre" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+						</div>
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Intervalo entre citas</label>
+						<select name="intervalo" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+							<option value="15">Cada 15 minutos</option>
+							<option value="30" selected>Cada 30 minutos</option>
+							<option value="60">Cada hora</option>
+						</select>
+					</div>
+					<button type="submit" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-colors text-sm">
+						Añadir franja
+					</button>
+				</form>
+			</div>
+
+			{# Lista franjas activas #}
+			<div>
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Franjas activas</h3>
+				{% if horarios is empty %}
+					<div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
+						<span class="text-lg">⚠️</span>
+						<p class="text-red-600 text-sm font-semibold">Sin franjas configuradas — los clientes no verán horas disponibles.</p>
+					</div>
+				{% else %}
+					<ul class="flex flex-col gap-2">
+						{% for horario in horarios %}
+							<li class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+								<div class="flex items-center gap-3">
+									<span class="text-lg">🟢</span>
+									<div>
+										<span class="font-bold text-gray-800 text-sm">
+											{{ horario.horaApertura|date('H:i') }}
+											–
+											{{ horario.horaCierre|date('H:i') }}
+										</span>
+										<span class="ml-2 text-xs text-gray-400">cada
+											{{ horario.intervaloMinutos }}
+											min</span>
+									</div>
+								</div>
+								<a href="{{ path('admin_horario_eliminar', {'id': horario.id}) }}" onclick="return confirm('¿Eliminar esta franja horaria?')" class="text-red-400 hover:text-red-600 transition-colors text-xs font-bold">
+									Eliminar
+								</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{# ===== 2. REGLAS RECURRENTES ===== #}
+	<div id="reglas" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+		<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+			<span class="text-2xl">📋</span>
+			<div>
+				<h2 class="text-lg font-bold text-gray-900">Reglas de Horario</h2>
+				<p class="text-gray-400 text-sm">Días o franjas que
+					<strong>siempre</strong>
+					están cerrados. Ej: domingos, tardes de sábado.</p>
+			</div>
+		</div>
+		<div
+			class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+			{# Formulario nueva regla #}
+			<div>
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Añadir regla recurrente</h3>
+				<form method="POST" action="{{ path('admin_regla_horario_nueva') }}" class="flex flex-col gap-3">
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Día de la semana</label>
+						<select name="dia_semana" required class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+							<option value="1">Lunes</option>
+							<option value="2">Martes</option>
+							<option value="3">Miércoles</option>
+							<option value="4">Jueves</option>
+							<option value="5">Viernes</option>
+							<option value="6">Sábado</option>
+							<option value="0">Domingo</option>
+						</select>
+					</div>
+
+					<div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+						<input type="checkbox" id="toggle-franja" class="rounded accent-pink-600">
+						<label for="toggle-franja" class="text-sm text-gray-600 cursor-pointer">
+							Solo bloquear una franja (no el día entero)
+						</label>
+					</div>
+
+					<div id="bloque-franja" class="hidden flex flex-col gap-3">
+						<div class="grid grid-cols-2 gap-3">
+							<div>
+								<label class="block text-xs font-semibold text-gray-500 mb-1">Desde</label>
+								<input type="time" name="hora_desde" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+							</div>
+							<div>
+								<label class="block text-xs font-semibold text-gray-500 mb-1">Hasta</label>
+								<input type="time" name="hora_hasta" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+							</div>
+						</div>
+					</div>
+
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">
+							Motivo
+							<span class="font-normal text-gray-400">(opcional)</span>
+						</label>
+						<input type="text" name="motivo" placeholder="Ej: Domingo cerrado" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+					</div>
+
+					<button type="submit" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-colors text-sm">
+						Guardar regla
+					</button>
+				</form>
+			</div>
+
+			{# Lista reglas activas #}
+			<div>
+				{% set dias = {0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado'} %}
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Reglas activas</h3>
+				{% if reglasHorario is empty %}
+					<p class="text-gray-400 text-sm py-4">No hay reglas configuradas.</p>
+				{% else %}
+					<ul class="flex flex-col gap-2">
+						{% for regla in reglasHorario %}
+							<li class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+								<div class="flex items-center gap-3">
+									<span class="text-lg">🔁</span>
+									<div>
+										<span class="font-bold text-gray-800 text-sm">{{ dias[regla.diaSemana] }}</span>
+										{% if regla.horaDesde and regla.horaHasta %}
+											<span class="ml-2 text-xs text-pink-600 font-semibold">
+												{{ regla.horaDesde|date('H:i') }}
+												–
+												{{ regla.horaHasta|date('H:i') }}
+											</span>
+										{% else %}
+											<span class="ml-2 text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">
+												Día completo
+											</span>
+										{% endif %}
+										{% if regla.motivo %}
+											<span class="ml-1 text-xs text-gray-400">—
+												{{ regla.motivo }}</span>
+										{% endif %}
+									</div>
+								</div>
+								<a href="{{ path('admin_regla_horario_eliminar', {'id': regla.id}) }}" onclick="return confirm('¿Eliminar esta regla?')" class="text-red-400 hover:text-red-600 transition-colors text-xs font-bold">
+									Eliminar
+								</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{# ===== 3. DÍAS BLOQUEADOS PUNTUALES ===== #}
+	<div id="bloqueados" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6 mb-10">
+		<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+			<span class="text-2xl">🚫</span>
+			<div>
+				<h2 class="text-lg font-bold text-gray-900">Días Bloqueados</h2>
+				<p class="text-gray-400 text-sm">Fechas concretas cerradas. Ej: festivos, vacaciones, enfermedad.</p>
+			</div>
+		</div>
+		<div
+			class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+			{# Formulario añadir día #}
+			<div>
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Bloquear una fecha</h3>
+				<form method="POST" action="{{ path('admin_dias_bloqueados') }}" class="flex flex-col gap-3">
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">Fecha</label>
+						<input type="date" name="fecha" required min="{{ "now"|date('Y-m-d') }}" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+					</div>
+					<div>
+						<label class="block text-xs font-semibold text-gray-500 mb-1">
+							Motivo
+							<span class="font-normal text-gray-400">(opcional)</span>
+						</label>
+						<input type="text" name="motivo" placeholder="Ej: Vacaciones de agosto" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400">
+					</div>
+					<button type="submit" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition-colors text-sm">
+						Bloquear día
+					</button>
+				</form>
+			</div>
+
+			{# Lista días bloqueados #}
+			<div>
+				<h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-4">Próximos días bloqueados</h3>
+				{% if diasBloqueados is empty %}
+					<p class="text-gray-400 text-sm py-4">No hay días bloqueados.</p>
+				{% else %}
+					<ul class="flex flex-col gap-2">
+						{% for dia in diasBloqueados %}
+							<li class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+								<div class="flex items-center gap-3">
+									<span class="text-lg">📵</span>
+									<div>
+										<span class="font-bold text-gray-800 text-sm">{{ dia.fecha|date('d/m/Y') }}</span>
+										{% if dia.motivo %}
+											<span class="ml-2 text-xs text-gray-400">—
+												{{ dia.motivo }}</span>
+										{% endif %}
+									</div>
+								</div>
+								<a href="{{ path('admin_dias_bloqueados_eliminar', {'id': dia.id}) }}" onclick="return confirm('¿Eliminar este día bloqueado?')" class="text-red-400 hover:text-red-600 transition-colors text-xs font-bold">
+									Eliminar
+								</a>
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.getElementById('toggle-franja').addEventListener('change', function () {
+document.getElementById('bloque-franja').classList.toggle('hidden', !this.checked);
+});
+	</script>
+
 {% endblock %}

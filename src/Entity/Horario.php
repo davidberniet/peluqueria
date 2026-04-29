@@ -14,9 +14,14 @@ class Horario
     #[ORM\Column]
     private ?int $id = null;
 
-    // Cambiado a DATETIME (fecha y hora) según tu esquema final
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::TIME_MUTABLE)]
     private ?\DateTimeInterface $horaApertura = null;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    private ?\DateTimeInterface $horaCierre = null;
+
+    #[ORM\Column(options: ['default' => 30])]
+    private int $intervaloMinutos = 30;
 
     #[ORM\ManyToOne(inversedBy: 'horarios')]
     #[ORM\JoinColumn(nullable: false)]
@@ -35,7 +40,28 @@ class Horario
     public function setHoraApertura(\DateTimeInterface $horaApertura): static
     {
         $this->horaApertura = $horaApertura;
+        return $this;
+    }
 
+    public function getHoraCierre(): ?\DateTimeInterface
+    {
+        return $this->horaCierre;
+    }
+
+    public function setHoraCierre(\DateTimeInterface $horaCierre): static
+    {
+        $this->horaCierre = $horaCierre;
+        return $this;
+    }
+
+    public function getIntervaloMinutos(): int
+    {
+        return $this->intervaloMinutos;
+    }
+
+    public function setIntervaloMinutos(int $intervaloMinutos): static
+    {
+        $this->intervaloMinutos = $intervaloMinutos;
         return $this;
     }
 
@@ -47,7 +73,6 @@ class Horario
     public function setLocal(?Local $local): static
     {
         $this->local = $local;
-
         return $this;
     }
 }

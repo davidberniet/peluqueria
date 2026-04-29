@@ -2,13 +2,19 @@
 
 namespace App\Controller;
 
-
+use App\Entity\DiaBloqueado;
 use App\Entity\Producto;
 use App\Form\ProductoType;
+use App\Repository\DiaBloqueadoRepository;
 use App\Repository\ProductoRepository;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Entity\Cita;
+use App\Entity\Local;
+use App\Entity\ReglaHorario;
+use App\Repository\ReglaHorarioRepository;
+use App\Repository\HorarioRepository;
+use App\Entity\Horario;
 use App\Repository\CitaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,36 +30,158 @@ use Symfony\Component\HttpFoundation\Request;
 class AdminController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_admin_dashboard')]
-    public function dashboard(CitaRepository $citaRepository): Response
-    {
-        $citas = $citaRepository->findBy([], ['fechaInicio' => 'ASC']);
+    public function dashboard(
+        CitaRepository $citaRepository,
+        \App\Repository\UserRepository $userRepository,
+        DiaBloqueadoRepository $diasBloqueadosRepo,
+        ReglaHorarioRepository $reglaHorarioRepo,
+        HorarioRepository $horarioRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $citasTotal = $citaRepository->findBy([], ['fechaInicio' => 'ASC']);
+
+        $citasHoyCount = 0;
+        $ingresosHoy = 0;
+        $hoy = (new \DateTime())->format('Y-m-d');
+
+        foreach ($citasTotal as $cita) {
+            if ($cita->getFechaInicio() && $cita->getFechaInicio()->format('Y-m-d') === $hoy) {
+                if ($cita->getEstado() !== 'Cancelada') {
+                    $citasHoyCount++;
+                    foreach ($cita->getServicios() as $servicio) {
+                        $ingresosHoy += $servicio->getPrecio();
+                    }
+                }
+            }
+        }
+
+        $usuarios = $userRepository->findAll();
+        $totalClientes = count($usuarios) > 0 ? count($usuarios) - 1 : 0;
+
+
+        $diasBloqueados = $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']);
+
+        $local = $em->getRepository(Local::class)->findOneBy([]);
+        if (!$local) {
+            throw $this->createNotFoundException('Local no encontrado');
+        }
 
         return $this->render('admin/index.html.twig', [
-            'citas' => $citas,
+            'citas' => $citasTotal,
+            'citas_hoy' => $citasHoyCount,
+            'ingresos_hoy' => $ingresosHoy,
+            'total_clientes' => $totalClientes,
+            'diasBloqueados' => $diasBloqueados,
+            'reglasHorario' => $reglaHorarioRepo->findBy(['local' => $local], ['diaSemana' => 'ASC']),
+            'horarios' => $horarioRepo->findBy(['local' => $local]),
         ]);
     }
 
-    // --- MAGIA NUEVA: CONFIRMAR CITA ---
+    // ✅ NUEVO: Añadir un día bloqueado desde el formulario del panel
+    #[Route('/dias-bloqueados/nuevo', name: 'admin_dias_bloqueados', methods: ['POST'])]
+    public function crearDiaBloqueado(Request $request, EntityManagerInterface $em): Response
+    {
+        $fechaStr = $request->request->get('fecha');
+        $motivo = $request->request->get('motivo');
+
+        if ($fechaStr) {
+            $local = $em->getRepository(Local::class)->findOneBy([]);
+
+            $dia = new DiaBloqueado();
+            $dia->setFecha(new \DateTime($fechaStr));
+            $dia->setMotivo($motivo ?: null);
+
+            if ($local) {
+                $dia->setLocal($local);
+            }
+
+            $em->persist($dia);
+            $em->flush();
+
+            $this->addFlash('success', 'Día bloqueado correctamente.');
+        }
+
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#bloqueados');
+    }
+
+    // Eliminar un día bloqueado
+    #[Route('/dias-bloqueados/{id}/eliminar', name: 'admin_dias_bloqueados_eliminar')]
+    public function eliminarDiaBloqueado(DiaBloqueado $dia, EntityManagerInterface $em): Response
+    {
+        $em->remove($dia);
+        $em->flush();
+
+        $this->addFlash('success', 'Día desbloqueado correctamente.');
+
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#bloqueados');
+    }
+
+    #[Route('/reglas-horario/nueva', name: 'admin_regla_horario_nueva', methods: ['POST'])]
+    public function crearReglaHorario(Request $request, EntityManagerInterface $em): Response
+    {
+        $local = $em->getRepository(Local::class)->findOneBy([]);
+
+        $regla = new ReglaHorario();
+        $regla->setDiaSemana((int) $request->request->get('dia_semana'));
+        $regla->setMotivo($request->request->get('motivo') ?: null);
+        $regla->setLocal($local);
+
+        // Si vienen las horas, es una franja. Si no, es día completo.
+        $desdeStr = $request->request->get('hora_desde');
+        $hastaStr = $request->request->get('hora_hasta');
+
+        if ($desdeStr && $hastaStr) {
+            $regla->setHoraDesde(new \DateTime($desdeStr));
+            $regla->setHoraHasta(new \DateTime($hastaStr));
+        }
+        // Si están vacías se quedan null → día completo bloqueado
+
+        $em->persist($regla);
+        $em->flush();
+
+        $this->addFlash('success', 'Regla añadida correctamente.');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+    }
+
+    #[Route('/reglas-horario/{id}/eliminar', name: 'admin_regla_horario_eliminar')]
+    public function eliminarReglaHorario(ReglaHorario $regla, EntityManagerInterface $em): Response
+    {
+        $em->remove($regla);
+        $em->flush();
+
+        $this->addFlash('success', 'Regla eliminada correctamente.');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+    }
+
+    // --- VER TODAS LAS CITAS (HISTORIAL COMPLETO) ---
+    #[Route('/citas', name: 'app_admin_citas')]
+    public function listaCitas(\App\Repository\CitaRepository $citaRepository): Response
+    {
+        $todasLasCitas = $citaRepository->findBy([], ['fechaInicio' => 'DESC']);
+
+        return $this->render('admin/citas.html.twig', [
+            'citas' => $todasLasCitas,
+        ]);
+    }
+
+    // --- CONFIRMAR CITA ---
     #[Route('/cita/{id}/confirmar', name: 'app_admin_cita_confirmar')]
     public function confirmarCita(Cita $cita, EntityManagerInterface $em): Response
     {
-        // Cambiamos el estado
         $cita->setEstado('Confirmada');
-        $em->flush(); // Guardamos en la base de datos
+        $em->flush();
 
-        return $this->redirectToRoute('app_admin_dashboard');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#citas');
     }
 
-    // --- MAGIA NUEVA: CANCELAR CITA ---
+    // --- CANCELAR CITA ---
     #[Route('/cita/{id}/cancelar', name: 'app_admin_cita_cancelar')]
     public function cancelarCita(Cita $cita, EntityManagerInterface $em): Response
     {
-        // Puedes borrarla del todo con $em->remove($cita), pero es mejor 
-        // cambiar el estado a 'Cancelada' para tener un historial.
         $cita->setEstado('Cancelada');
         $em->flush();
 
-        return $this->redirectToRoute('app_admin_dashboard');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#citas');
     }
 
     // --- LISTA DE SERVICIOS EN EL PANEL ---
@@ -61,7 +189,6 @@ class AdminController extends AbstractController
     public function gestionServicios(\App\Repository\ServicioRepository $servicioRepository): Response
     {
         return $this->render('admin/servicios.html.twig', [
-            // Aquí traemos TODOS los servicios, incluso los inactivos, para que el Jefe los vea
             'servicios' => $servicioRepository->findAll(),
         ]);
     }
@@ -71,7 +198,6 @@ class AdminController extends AbstractController
     #[Route('/servicio/{id}/editar', name: 'app_admin_servicio_editar')]
     public function formServicio(Request $request, EntityManagerInterface $em, Servicio $servicio = null): Response
     {
-        // Si no le pasamos un servicio por la URL, significa que estamos creando uno NUEVO
         $editando = true;
         if (!$servicio) {
             $servicio = new Servicio();
@@ -94,11 +220,10 @@ class AdminController extends AbstractController
         ]);
     }
 
-    // --- "BORRAR" (DESACTIVAR) UN SERVICIO ---
+    // --- DESACTIVAR UN SERVICIO ---
     #[Route('/servicio/{id}/eliminar', name: 'app_admin_servicio_eliminar')]
     public function eliminarServicio(Servicio $servicio, EntityManagerInterface $em): Response
     {
-        // En lugar de borrarlo y romper citas antiguas, lo ocultamos del catálogo
         $servicio->setActivo(false);
         $em->flush();
 
@@ -117,8 +242,12 @@ class AdminController extends AbstractController
     // --- CREAR O EDITAR UN PRODUCTO (CON SUBIDA DE FOTO) ---
     #[Route('/producto/nuevo', name: 'app_admin_producto_nuevo')]
     #[Route('/producto/{id}/editar', name: 'app_admin_producto_editar')]
-    public function formProducto(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, Producto $producto = null): Response
-    {
+    public function formProducto(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        Producto $producto = null
+    ): Response {
         $editando = true;
         if (!$producto) {
             $producto = new Producto();
@@ -129,25 +258,20 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
-            // LÓGICA DE LA IMAGEN
             $imagenFile = $form->get('imagen')->getData();
             if ($imagenFile) {
                 $originalFilename = pathinfo($imagenFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imagenFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imagenFile->guessExtension();
 
                 try {
-                    // Movemos el archivo a la carpeta public/uploads/productos
                     $imagenFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/productos',
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/productos',
                         $newFilename
                     );
                 } catch (FileException $e) {
-                    // Si falla la subida
                 }
 
-                // Guardamos solo el nombre en la base de datos
                 $producto->setImagen($newFilename);
             }
 
@@ -160,7 +284,7 @@ class AdminController extends AbstractController
         return $this->render('admin/producto_form.html.twig', [
             'form' => $form->createView(),
             'editando' => $editando,
-            'producto' => $producto // Lo pasamos por si queremos mostrar la foto actual al editar
+            'producto' => $producto,
         ]);
     }
 
@@ -173,6 +297,34 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_productos');
     }
+
+    #[Route('/horarios/nuevo', name: 'admin_horario_nuevo', methods: ['POST'])]
+    public function crearHorario(Request $request, EntityManagerInterface $em): Response
+    {
+        $local = $em->getRepository(Local::class)->findOneBy([]);
+
+        $horario = new Horario();
+        $horario->setHoraApertura(new \DateTime($request->request->get('hora_apertura')));
+        $horario->setHoraCierre(new \DateTime($request->request->get('hora_cierre')));
+        $horario->setIntervaloMinutos((int) $request->request->get('intervalo', 30));
+        $horario->setLocal($local);
+
+        $em->persist($horario);
+        $em->flush();
+
+        $this->addFlash('success', 'Franja horaria añadida.');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+    }
+
+    #[Route('/horarios/{id}/eliminar', name: 'admin_horario_eliminar')]
+    public function eliminarHorario(Horario $horario, EntityManagerInterface $em): Response
+    {
+        $em->remove($horario);
+        $em->flush();
+
+        $this->addFlash('success', 'Franja horaria eliminada.');
+        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+    }
+
+
 }
-
-

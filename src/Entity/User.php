@@ -6,14 +6,15 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Scheb\TwoFactorBundle\Model\Email\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[UniqueEntity(fields: ['email'], message: 'Este correo ya está en uso. Por favor, inicia sesión o usa otro.')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -22,6 +23,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     private ?string $email = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $authCode = null;
 
     /**
      * @var list<string> The user roles
@@ -129,7 +133,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
 
         return $data;
     }
@@ -222,5 +226,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    // --- MÉTODOS PARA EL 2FA (DOBLE FACTOR) ---
+
+    public function isEmailAuthEnabled(): bool
+    {
+        return true; // Activamos el 2FA para todos los usuarios
+    }
+
+    public function getEmailAuthRecipient(): string
+    {
+        return $this->email; // A qué correo enviamos el código
+    }
+
+    public function getEmailAuthCode(): string
+    {
+        return (string) $this->authCode;
+    }
+
+    public function setEmailAuthCode(string $authCode): void
+    {
+        $this->authCode = $authCode;
     }
 }
