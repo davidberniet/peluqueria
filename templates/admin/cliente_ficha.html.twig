@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ficha de
+	{{ cliente.nombre }}
+	| Venus
+{% endblock %}
+
+{% block body %}
+	<div
+		class="max-w-4xl mx-auto my-10 px-4">
+
+		{# ===== CABECERA ===== #}
+		<div class="mb-8 flex items-center justify-between">
+			<div>
+				<a href="{{ path('app_admin_dashboard') }}" class="text-sm text-gray-400 hover:text-pink-600 transition font-semibold mb-2 inline-block">
+					← Volver al panel
+				</a>
+				<h1 class="text-3xl font-extrabold text-gray-900">{{ cliente.nombre }}</h1>
+				<p class="text-gray-500 mt-1">Ficha completa del cliente</p>
+			</div>
+			<div class="bg-pink-100 rounded-full p-6">
+				<span class="text-4xl">👤</span>
+			</div>
+		</div>
+
+		{# ===== DATOS PERSONALES ===== #}
+		<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+			<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+				<span class="text-2xl">📋</span>
+				<h2 class="text-lg font-bold text-gray-900">Datos Personales</h2>
+			</div>
+			<div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+				<div>
+					<p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Nombre</p>
+					<p class="font-bold text-gray-900">{{ cliente.nombre }}</p>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Email</p>
+					<p class="font-bold text-gray-900">{{ cliente.email }}</p>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Teléfono</p>
+					<p class="font-bold text-gray-900">
+						{{ cliente.telefono ?? '—' }}
+					</p>
+				</div>
+			</div>
+		</div>
+
+		{# ===== ESTADÍSTICAS ===== #}
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+			<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+				<div class="bg-pink-100 p-4 rounded-xl mr-4">
+					<span class="text-2xl">✂️</span>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Visitas</p>
+					<p class="text-3xl font-bold text-gray-900">{{ totalCitas }}</p>
+				</div>
+			</div>
+			<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+				<div class="bg-green-100 p-4 rounded-xl mr-4">
+					<span class="text-2xl">💶</span>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total gastado</p>
+					<p class="text-3xl font-bold text-gray-900">{{ totalGastado|number_format(2, ',', '.') }}€</p>
+				</div>
+			</div>
+			<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center">
+				<div class="bg-yellow-100 p-4 rounded-xl mr-4">
+					<span class="text-2xl">⏳</span>
+				</div>
+				<div>
+					<p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pendientes</p>
+					<p class="text-3xl font-bold text-gray-900">{{ citasPendientes }}</p>
+				</div>
+			</div>
+		</div>
+
+		{# ===== HISTORIAL DE CITAS ===== #}
+		<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+			<div class="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50">
+				<span class="text-2xl">📅</span>
+				<div>
+					<h2 class="text-lg font-bold text-gray-900">Historial de Citas</h2>
+					<p class="text-gray-400 text-sm">Todas las reservas de este cliente.</p>
+				</div>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full text-left border-collapse">
+					<thead>
+						<tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
+							<th class="px-6 py-4 font-semibold">Fecha</th>
+							<th class="px-6 py-4 font-semibold">Servicio</th>
+							<th class="px-6 py-4 font-semibold">Precio</th>
+							<th class="px-6 py-4 font-semibold">Estado</th>
+						</tr>
+					</thead>
+					<tbody class="text-sm text-gray-700">
+						{% for cita in citas %}
+							<tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+								<td class="px-6 py-4 font-semibold text-pink-600">
+									{{ cita.fechaInicio|date('d/m/Y') }}<br>
+									<span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
+								</td>
+								<td class="px-6 py-4">
+									{% for servicio in cita.servicios %}
+										{{ servicio.nombre }}
+										{% if not loop.last %}
+											+
+										{% endif %}
+									{% else %}
+										Cita General
+									{% endfor %}
+								</td>
+								<td class="px-6 py-4 font-bold text-gray-900">
+									{% set precio = 0 %}
+									{% for servicio in cita.servicios %}
+										{% set precio = precio + servicio.getPrecio() %}
+									{% endfor %}
+									{{ precio|number_format(2, ',', '.') }}€
+								</td>
+								<td class="px-6 py-4">
+									{% if cita.estado == 'Pendiente' %}
+										<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">Pendiente</span>
+									{% elseif cita.estado == 'Confirmada' %}
+										<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">Confirmada</span>
+									{% else %}
+										<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">Cancelada</span>
+									{% endif %}
+								</td>
+							</tr>
+						{% else %}
+							<tr>
+								<td colspan="4" class="px-6 py-8 text-center text-gray-500">
+									Este cliente aún no tiene citas.
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</div>
+{% endblock %}

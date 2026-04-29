@@ -326,5 +326,38 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
     }
 
+    #[Route('/cliente/{id}', name: 'app_admin_cliente_ficha')]
+    public function fichaCliente(\App\Entity\User $cliente): Response
+    {
+        // Historial ordenado de más reciente a más antiguo
+        $citas = $cliente->getCitas()->toArray();
+        usort($citas, fn($a, $b) => $b->getFechaInicio() <=> $a->getFechaInicio());
+
+        // Estadísticas
+        $totalGastado = 0;
+        $totalCitas = 0;
+        $citasPendientes = 0;
+
+        foreach ($citas as $cita) {
+            if ($cita->getEstado() !== 'Cancelada') {
+                $totalCitas++;
+                foreach ($cita->getServicios() as $servicio) {
+                    $totalGastado += $servicio->getPrecio();
+                }
+            }
+            if ($cita->getEstado() === 'Pendiente') {
+                $citasPendientes++;
+            }
+        }
+
+        return $this->render('admin/cliente_ficha.html.twig', [
+            'cliente' => $cliente,
+            'citas' => $citas,
+            'totalGastado' => $totalGastado,
+            'totalCitas' => $totalCitas,
+            'citasPendientes' => $citasPendientes,
+        ]);
+    }
+
 
 }

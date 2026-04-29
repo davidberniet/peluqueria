@@ -29,7 +29,9 @@
 						{% for cita in citas %}
 							<tr class="border-b border-gray-50 hover:bg-pink-50 transition">
 								<td class="px-6 py-4 font-bold text-gray-900">
-									{{ cita.usuario.nombre }}
+									<a href="{{ path('app_admin_cliente_ficha', {'id': cita.usuario.id}) }}" class="hover:text-pink-600 transition">
+										{{ cita.usuario.nombre }}
+									</a>
 									<span class="block text-xs font-normal text-gray-500">{{ cita.usuario.email }}</span>
 
 									{% if cita.usuario.telefono %}
