@@ -196,7 +196,9 @@
 						</p>
 
 						<div class="flex justify-between items-center">
-							{% if cita.estado == 'Pendiente' %}
+							{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+								<span class="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm font-bold">Completada</span>
+							{% elseif cita.estado == 'Pendiente' %}
 								<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">⏳ Pendiente</span>
 							{% elseif cita.estado == 'Confirmada' %}
 								<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">✅ Confirmada</span>
@@ -254,7 +256,10 @@
 									{{ precio|number_format(2, ',', '.') }}€
 								</td>
 								<td class="px-6 py-4">
-									{% if cita.estado == 'Pendiente' %}
+									{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+										<span class="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm font-bold">
+											Completada</span>
+									{% elseif cita.estado == 'Pendiente' %}
 										<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">⏳ Pendiente</span>
 									{% elseif cita.estado == 'Confirmada' %}
 										<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">✅ Confirmada</span>

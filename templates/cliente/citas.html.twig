@@ -63,9 +63,16 @@
 											{{ cita.fechaInicio|date('H:i') }}
 											-
 											{{ cita.fechaFin|date('H:i') }}
-											| 
-																						                                        Estado:
-											<span class="font-bold uppercase text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">{{ cita.estado }}</span>
+											| Estado:
+											{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+												<span class="font-bold uppercase text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">Completada</span>
+											{% elseif cita.estado == 'Pendiente' %}
+												<span class="font-bold uppercase text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">Pendiente</span>
+											{% elseif cita.estado == 'Confirmada' %}
+												<span class="font-bold uppercase text-xs px-2 py-1 rounded bg-green-100 text-green-800">Confirmada</span>
+											{% else %}
+												<span class="font-bold uppercase text-xs px-2 py-1 rounded bg-red-100 text-red-800">Cancelada</span>
+											{% endif %}
 										</p>
 
 										{% if cita.productos|length > 0 %}
@@ -85,9 +92,19 @@
 									</div>
 
 									<div class="mt-4 sm:mt-0 sm:text-right">
-										<a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')" class="inline-block text-red-400 hover:text-red-600 text-sm font-bold bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
-											Cancelar
-										</a>
+										{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
+											{# Cita en el futuro: Botón de Cancelar #}
+											<a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')" class="inline-block text-red-400 hover:text-red-600 text-sm font-bold bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
+												Cancelar
+											</a>
+										{% else %}
+											{# Cita pasada/completada: Icono de Papelera #}
+											<a href="{{ path('app_cliente_cita_eliminar', {'id': cita.id}) }}" onclick="return confirm('¿Borrar este registro de tu historial?')" class="inline-flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 p-2.5 rounded-xl transition-colors" title="Eliminar del historial">
+												<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+												</svg>
+											</a>
+										{% endif %}
 									</div>
 
 								</div>

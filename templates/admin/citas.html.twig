@@ -58,7 +58,9 @@
 								</td>
 
 								<td class="px-6 py-4">
-									{% if cita.estado == 'Pendiente' %}
+									{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+										<span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">Completada</span>
+									{% elseif cita.estado == 'Pendiente' %}
 										<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
 									{% elseif cita.estado == 'Confirmada' %}
 										<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
@@ -69,13 +71,13 @@
 
 								<td class="px-6 py-4 text-right">
 									<div class="flex justify-end gap-2">
-										{% if cita.estado == 'Pendiente' %}
+										{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
 											<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-100 text-green-600 font-bold px-3 py-1.5 rounded-lg border border-green-200 transition-colors text-xs">
 												Confirmar
 											</a>
 										{% endif %}
 
-										{% if cita.estado != 'Cancelada' %}
+										{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
 											<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
 												Cancelar
 											</a>

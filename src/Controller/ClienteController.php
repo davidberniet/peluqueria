@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
-use App\Repository\CitaRepository; // <-- ¡Añadido para poder buscar citas!
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Cita;
+use App\Repository\CitaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,7 +20,6 @@ class ClienteController extends AbstractController
         ]);
     }
 
-    // --- ¡AQUÍ ESTÁ LA RUTA QUE TE FALTABA! ---
     #[Route('/mis-citas', name: 'app_cliente_citas')]
     public function misCitas(CitaRepository $citaRepository): Response
     {
@@ -39,5 +40,21 @@ class ClienteController extends AbstractController
         return $this->render('cliente/index.html.twig', [
             'controller_name' => 'Reservar Cita',
         ]);
+    }
+
+    #[Route('/mis-citas/eliminar/{id}', name: 'app_cliente_cita_eliminar')]
+    public function eliminarHistorial(Cita $cita, EntityManagerInterface $entityManager): Response
+    {
+        // Si la cita no pertenece al usuario logueado, le bloqueamos
+        if ($cita->getUsuario() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('No puedes borrar citas que no son tuyas.');
+        }
+
+        $entityManager->remove($cita);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Cita eliminada correctamente.');
+
+        return $this->redirectToRoute('app_cliente_citas');
     }
 }

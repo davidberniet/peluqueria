@@ -65,8 +65,9 @@
 		</div>
 
 		{# --- Versión móvil: tarjetas --- #}
+		{% set proximas_citas = citas|filter(c => c.estado != 'Cancelada' and c.fechaInicio > date()) %}
 		<div class="block md:hidden divide-y divide-gray-100">
-			{% for cita in citas|slice(0, 5) %}
+			{% for cita in proximas_citas|slice(0, 5) %}
 				<div class="p-5">
 					<div class="flex justify-between items-start mb-3">
 						<div>
@@ -96,7 +97,10 @@
 									Cita General
 								{% endfor %}
 							</p>
-							{% if cita.estado == 'Pendiente' %}
+							{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+								<span class="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm font-bold">
+									Completada</span>
+							{% elseif cita.estado == 'Pendiente' %}
 								<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">⏳ Pendiente</span>
 							{% elseif cita.estado == 'Confirmada' %}
 								<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">✅ Confirmada</span>
@@ -105,12 +109,12 @@
 							{% endif %}
 						</div>
 						<div class="flex flex-col gap-2">
-							{% if cita.estado == 'Pendiente' %}
+							{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
 								<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-xl text-sm text-center transition-colors">
 									✅ Confirmar
 								</a>
 							{% endif %}
-							{% if cita.estado != 'Cancelada' %}
+							{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
 								<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-sm text-center transition-colors">
 									❌ Cancelar
 								</a>
@@ -138,7 +142,7 @@
 					</tr>
 				</thead>
 				<tbody class="text-sm text-gray-700">
-					{% for cita in citas|slice(0, 5) %}
+					{% for cita in proximas_citas|slice(0, 5) %}
 						<tr class="border-b border-gray-50 hover:bg-gray-50 transition">
 							<td class="px-6 py-4">
 								<a href="{{ path('app_admin_cliente_ficha', {'id': cita.usuario.id}) }}" class="font-bold text-gray-900 hover:text-pink-600 transition text-base">
@@ -165,22 +169,24 @@
 								<span class="text-gray-500 text-sm font-semibold">{{ cita.fechaInicio|date('H:i') }}</span>
 							</td>
 							<td class="px-6 py-4">
-								{% if cita.estado == 'Pendiente' %}
-									<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">⏳ Pendiente</span>
+								{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+									<span class="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm font-bold">Completada</span>
+								{% elseif cita.estado == 'Pendiente' %}
+									<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">Pendiente</span>
 								{% elseif cita.estado == 'Confirmada' %}
-									<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">✅ Confirmada</span>
+									<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">Confirmada</span>
 								{% else %}
 									<span class="px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">❌ Cancelada</span>
 								{% endif %}
 							</td>
 							<td class="px-6 py-4 text-right">
 								<div class="flex justify-end gap-2">
-									{% if cita.estado == 'Pendiente' %}
+									{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
 										<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-500 hover:text-white text-green-700 font-bold px-4 py-2 rounded-xl border border-green-200 transition-colors text-sm">
 											✅ Confirmar
 										</a>
 									{% endif %}
-									{% if cita.estado != 'Cancelada' %}
+									{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
 										<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-500 hover:text-white text-red-700 font-bold px-4 py-2 rounded-xl border border-red-200 transition-colors text-sm">
 											❌ Cancelar
 										</a>
