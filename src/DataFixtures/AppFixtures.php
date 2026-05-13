@@ -85,6 +85,8 @@ class AppFixtures extends Fixture
         foreach ($diasPrueba as $fechaHora) {
             $horario = new Horario();
             $horario->setHoraApertura(new \DateTime($fechaHora));
+            // Suponemos que el local cierra 8 horas después de abrir
+            $horario->setHoraCierre((new \DateTime($fechaHora))->modify('+8 hours'));
 
             // Vinculamos el horario al local
             $horario->setLocal($local);

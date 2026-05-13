@@ -58,7 +58,7 @@ class CitaController extends AbstractController
             $em->persist($cita);
             $em->flush();
 
-            return $this->redirectToRoute('app_cliente_perfil');
+            return $this->redirectToRoute('app_cliente_perfil', ['cita_confirmada' => 'true']);
         }
 
         // --- Horas ocupadas (tu lógica original, sin tocar) ---
