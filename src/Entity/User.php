@@ -57,6 +57,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[ORM\OneToMany(targetEntity: Cita::class, mappedBy: 'empleado')]
     private Collection $citasAtendidas;
 
+    #[ORM\ManyToOne(inversedBy: 'empleados')]
+    private ?Local $local = null;
+
     public function __construct()
     {
         $this->citas = new ArrayCollection();
@@ -248,5 +251,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function setEmailAuthCode(string $authCode): void
     {
         $this->authCode = $authCode;
+    }
+
+    public function getLocal(): ?Local
+    {
+        return $this->local;
+    }
+
+    public function setLocal(?Local $local): static
+    {
+        $this->local = $local;
+
+        return $this;
     }
 }

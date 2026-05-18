@@ -63,6 +63,12 @@ class Local
     #[ORM\OneToMany(targetEntity: ReglaHorario::class, mappedBy: 'local')]
     private Collection $reglaHorarios;
 
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'local')]
+    private Collection $empleados;
+
     public function __construct()
     {
         $this->horarios = new ArrayCollection();
@@ -70,6 +76,7 @@ class Local
         $this->productos = new ArrayCollection();
         $this->servicios = new ArrayCollection();
         $this->reglaHorarios = new ArrayCollection();
+        $this->empleados = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -293,6 +300,36 @@ class Local
             // set the owning side to null (unless already changed)
             if ($reglaHorario->getLocal() === $this) {
                 $reglaHorario->setLocal(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getEmpleados(): Collection
+    {
+        return $this->empleados;
+    }
+
+    public function addEmpleado(User $empleado): static
+    {
+        if (!$this->empleados->contains($empleado)) {
+            $this->empleados->add($empleado);
+            $empleado->setLocal($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEmpleado(User $empleado): static
+    {
+        if ($this->empleados->removeElement($empleado)) {
+            // set the owning side to null (unless already changed)
+            if ($empleado->getLocal() === $this) {
+                $empleado->setLocal(null);
             }
         }
 
