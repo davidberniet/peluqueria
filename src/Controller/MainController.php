@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
-use App\Repository\ServicioRepository; // <--- Importante para buscar en la BD
+use App\Entity\Local;
+use App\Repository\ServicioRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,6 +28,16 @@ class MainController extends AbstractController
         // Se los pasamos a una plantilla nueva
         return $this->render('main/servicios.html.twig', [
             'servicios' => $misServicios,
+        ]);
+    }
+
+    #[Route('/contacto', name: 'app_contacto')]
+    public function contacto(EntityManagerInterface $em): Response
+    {
+        $local = $em->getRepository(Local::class)->findOneBy([]);
+
+        return $this->render('main/contacto.html.twig', [
+            'local' => $local,
         ]);
     }
 }

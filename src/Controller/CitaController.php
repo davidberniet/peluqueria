@@ -15,8 +15,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Twig\Environment as TwigEnvironment;
 
 #[IsGranted('ROLE_USER')]
 class CitaController extends AbstractController
@@ -29,7 +33,9 @@ class CitaController extends AbstractController
         CitaRepository $citaRepository,
         DiaBloqueadoRepository $diasBloqueadosRepo,
         ReglaHorarioRepository $reglasRepo,
-        HorarioRepository $horarioRepo
+        HorarioRepository $horarioRepo,
+        MailerInterface $mailer,
+        TwigEnvironment $twig
     ): Response {
         $cita = new Cita();
         $cita->setEstado('Pendiente');
@@ -39,29 +45,60 @@ class CitaController extends AbstractController
             $cita->setLocal($local);
         }
 
-        $empleado = $em->getRepository(User::class)->findOneBy([]);
-        if ($empleado) {
-            $cita->setEmpleado($empleado);
-        }
+        // Punto 5: ya NO asignamos el empleado hardcodeado aquí.
+        // El formulario CitaType gestiona la selección (campo 'empleado' filtrado por rol).
 
         $form = $this->createForm(CitaType::class, $cita);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $cita->setUsuario($this->getUser());
-            $cita->addServicio($servicio);
 
-            $fechaFin = clone $cita->getFechaInicio();
+            // --- Punto 4: Validación server-side de solapamiento ---
+            $fechaInicio = $cita->getFechaInicio();
+            $fechaFin = clone $fechaInicio;
             $fechaFin->modify('+' . $servicio->getDuration() . ' minutes');
             $cita->setFechaFin($fechaFin);
+
+            $solapadas = $citaRepository->findSolapadas($fechaInicio, $fechaFin);
+            if (count($solapadas) > 0) {
+                $this->addFlash(
+                    'error',
+                    '⚠️ Lo sentimos, esa hora ya no está disponible. Por favor elige otra.'
+                );
+                return $this->redirectToRoute('app_reservar', ['id' => $servicio->getId()]);
+            }
+            // --- Fin validación server-side ---
+
+            $cita->setUsuario($this->getUser());
+            $cita->addServicio($servicio);
 
             $em->persist($cita);
             $em->flush();
 
+            // --- Punto 2: Envío de email de confirmación ---
+            try {
+                $htmlContent = $twig->render('emails/confirmacion_cita.html.twig', [
+                    'cita'    => $cita,
+                    'app_url' => $request->getSchemeAndHttpHost(),
+                ]);
+
+                $email = (new Email())
+                    ->from('noreply@venus-peluqueria.com')
+                    ->to($cita->getUsuario()->getEmail())
+                    ->subject('✂️ ¡Tu cita en Venus está confirmada!')
+                    ->html($htmlContent);
+
+                $mailer->send($email);
+            } catch (TransportExceptionInterface $e) {
+                // El email falla silenciosamente: la reserva ya está guardada
+                // En producción se podría loguear: $this->logger->error(...)
+            }
+            // --- Fin envío email ---
+
             return $this->redirectToRoute('app_cliente_perfil', ['cita_confirmada' => 'true']);
         }
 
-        // --- Horas ocupadas (tu lógica original, sin tocar) ---
+        // --- Horas ocupadas ---
         $citasFuturas = $citaRepository->createQueryBuilder('c')
             ->where('c.fechaInicio >= :hoy')
             ->andWhere('c.estado != :estado')
@@ -70,61 +107,55 @@ class CitaController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        /// ✅ Generar slots dinámicamente desde los horarios del local
+        // Generar slots dinámicamente desde los horarios del local
         $horarios = $local ? $horarioRepo->findBy(['local' => $local]) : [];
 
         $slotsTotales = [];
         foreach ($horarios as $horario) {
-            $cursor = clone $horario->getHoraApertura();
-            $cierre = $horario->getHoraCierre();
+            $cursor   = clone $horario->getHoraApertura();
+            $cierre   = $horario->getHoraCierre();
             $intervalo = $horario->getIntervaloMinutos();
 
-            // Avanzamos de slot en slot hasta llegar al cierre
             while ($cursor < $cierre) {
                 $slotsTotales[] = $cursor->format('H:i');
                 $cursor->modify("+{$intervalo} minutes");
             }
         }
 
-        // Eliminar duplicados por si dos franjas se solapan accidentalmente
         $slotsTotales = array_unique($slotsTotales);
         sort($slotsTotales);
+
         $horasOcupadas = [];
         foreach ($citasFuturas as $c) {
-            $dia = $c->getFechaInicio()->format('Y-m-d');
+            $dia   = $c->getFechaInicio()->format('Y-m-d');
             $inicio = $c->getFechaInicio()->format('H:i');
-            $fin = $c->getFechaFin()?->format('H:i') ?? $inicio;
+            $fin    = $c->getFechaFin()?->format('H:i') ?? $inicio;
 
             foreach ($slotsTotales as $slot) {
-                // Bloquea el slot si cae dentro del rango [inicio, fin)
                 if ($slot >= $inicio && $slot < $fin) {
                     $horasOcupadas[$dia][] = $slot;
                 }
             }
         }
 
-        // ✅ NUEVO: obtener los días bloqueados para los próximos 14 días
-        // Devuelve un array simple: ['2025-08-15', '2025-08-20', ...]
-        $localId = $local?->getId(); // null-safe por si $local no existe
+        $localId = $local?->getId();
         $diasBloqueados = $diasBloqueadosRepo->findFechasBloqueadasProximos(14, $localId);
 
-        // Serializar las reglas para JS
-        // horaDesde/horaHasta son DateTime de tipo TIME — formateamos a 'H:i' o null
         $reglas = $local ? array_map(function ($r) {
             return [
-                'dia' => $r->getDiaSemana(),
+                'dia'   => $r->getDiaSemana(),
                 'desde' => $r->getHoraDesde()?->format('H:i'),
                 'hasta' => $r->getHoraHasta()?->format('H:i'),
             ];
         }, $reglasRepo->findBy(['local' => $local])) : [];
 
         return $this->render('cita/reservar.html.twig', [
-            'servicio' => $servicio,
-            'form' => $form->createView(),
+            'servicio'      => $servicio,
+            'form'          => $form->createView(),
             'horasOcupadas' => json_encode($horasOcupadas),
             'diasBloqueados' => json_encode($diasBloqueados),
             'reglasHorario' => json_encode($reglas),
-            'slotsTotales' => json_encode(array_values($slotsTotales)),
+            'slotsTotales'  => json_encode(array_values($slotsTotales)),
         ]);
     }
 

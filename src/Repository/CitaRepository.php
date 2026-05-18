@@ -16,28 +16,31 @@ class CitaRepository extends ServiceEntityRepository
         parent::__construct($registry, Cita::class);
     }
 
-    //    /**
-    //     * @return Cita[] Returns an array of Cita objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Devuelve las citas activas que se solapan con el rango [inicio, fin).
+     * Se usa para la validación server-side antes de persistir una nueva cita.
+     *
+     * Una cita C solapa con [inicio, fin) si:
+     *   C.fechaInicio < fin  AND  C.fechaFin > inicio
+     *
+     * @param int|null $excluirId ID de cita a excluir (útil para edición futura)
+     * @return Cita[]
+     */
+    public function findSolapadas(\DateTime $inicio, \DateTime $fin, ?int $excluirId = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->where('c.estado != :cancelada')
+            ->andWhere('c.fechaInicio < :fin')
+            ->andWhere('c.fechaFin > :inicio')
+            ->setParameter('cancelada', 'Cancelada')
+            ->setParameter('inicio', $inicio)
+            ->setParameter('fin', $fin);
 
-    //    public function findOneBySomeField($value): ?Cita
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($excluirId !== null) {
+            $qb->andWhere('c.id != :excluirId')
+               ->setParameter('excluirId', $excluirId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

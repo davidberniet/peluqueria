@@ -33,28 +33,21 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Devuelve los usuarios que tienen rol de empleado o administrador.
+     * Se usa para el selector de "¿Con quién te apetece?" en el formulario de reserva.
+     *
+     * @return User[]
+     */
+    public function findEmpleados(): array
+    {
+        // Doctrine almacena los roles como JSON. Filtramos con LIKE para ambos roles.
+        return $this->createQueryBuilder('u')
+            ->where("u.roles LIKE :rolEmpleado OR u.roles LIKE :rolAdmin")
+            ->setParameter('rolEmpleado', '%ROLE_EMPLEADO%')
+            ->setParameter('rolAdmin', '%ROLE_ADMIN%')
+            ->orderBy('u.nombre', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

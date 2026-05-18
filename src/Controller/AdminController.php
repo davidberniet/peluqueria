@@ -3,27 +3,32 @@
 namespace App\Controller;
 
 use App\Entity\DiaBloqueado;
-use App\Entity\Producto;
-use App\Form\ProductoType;
-use App\Repository\DiaBloqueadoRepository;
-use App\Repository\ProductoRepository;
-use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use App\Entity\Cita;
 use App\Entity\Local;
+use App\Entity\Producto;
 use App\Entity\ReglaHorario;
-use App\Repository\ReglaHorarioRepository;
-use App\Repository\HorarioRepository;
+use App\Entity\User;
+use App\Entity\Cita;
 use App\Entity\Horario;
+use App\Entity\Servicio;
+use App\Form\EmpleadoType;
+use App\Form\LocalType;
+use App\Form\ProductoType;
+use App\Form\ServicioType;
 use App\Repository\CitaRepository;
+use App\Repository\DiaBloqueadoRepository;
+use App\Repository\HorarioRepository;
+use App\Repository\ProductoRepository;
+use App\Repository\ReglaHorarioRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Entity\Servicio;
-use App\Form\ServicioType;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -32,7 +37,7 @@ class AdminController extends AbstractController
     #[Route('/dashboard', name: 'app_admin_dashboard')]
     public function dashboard(
         CitaRepository $citaRepository,
-        \App\Repository\UserRepository $userRepository,
+        UserRepository $userRepository,
         DiaBloqueadoRepository $diasBloqueadosRepo,
         ReglaHorarioRepository $reglaHorarioRepo,
         HorarioRepository $horarioRepo,
@@ -41,8 +46,8 @@ class AdminController extends AbstractController
         $citasTotal = $citaRepository->findBy([], ['fechaInicio' => 'ASC']);
 
         $citasHoyCount = 0;
-        $ingresosHoy = 0;
-        $hoy = (new \DateTime())->format('Y-m-d');
+        $ingresosHoy   = 0;
+        $hoy           = (new \DateTime())->format('Y-m-d');
 
         foreach ($citasTotal as $cita) {
             if ($cita->getFechaInicio() && $cita->getFechaInicio()->format('Y-m-d') === $hoy) {
@@ -55,9 +60,8 @@ class AdminController extends AbstractController
             }
         }
 
-        $usuarios = $userRepository->findAll();
+        $usuarios      = $userRepository->findAll();
         $totalClientes = count($usuarios) > 0 ? count($usuarios) - 1 : 0;
-
 
         $diasBloqueados = $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']);
 
@@ -66,14 +70,18 @@ class AdminController extends AbstractController
             throw $this->createNotFoundException('Local no encontrado');
         }
 
+        $empleados = $userRepository->findEmpleados();
+
         return $this->render('admin/index.html.twig', [
-            'citas' => $citasTotal,
-            'citas_hoy' => $citasHoyCount,
-            'ingresos_hoy' => $ingresosHoy,
+            'citas'          => $citasTotal,
+            'citas_hoy'      => $citasHoyCount,
+            'ingresos_hoy'   => $ingresosHoy,
             'total_clientes' => $totalClientes,
             'diasBloqueados' => $diasBloqueados,
-            'reglasHorario' => $reglaHorarioRepo->findBy(['local' => $local], ['diaSemana' => 'ASC']),
-            'horarios' => $horarioRepo->findBy(['local' => $local]),
+            'reglasHorario'  => $reglaHorarioRepo->findBy(['local' => $local], ['diaSemana' => 'ASC']),
+            'horarios'       => $horarioRepo->findBy(['local' => $local]),
+            'empleados'      => $empleados,
+            'local'          => $local,
         ]);
     }
 
@@ -334,8 +342,8 @@ class AdminController extends AbstractController
         usort($citas, fn($a, $b) => $b->getFechaInicio() <=> $a->getFechaInicio());
 
         // Estadísticas
-        $totalGastado = 0;
-        $totalCitas = 0;
+        $totalGastado    = 0;
+        $totalCitas      = 0;
         $citasPendientes = 0;
 
         foreach ($citas as $cita) {
@@ -351,13 +359,110 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/cliente_ficha.html.twig', [
-            'cliente' => $cliente,
-            'citas' => $citas,
-            'totalGastado' => $totalGastado,
-            'totalCitas' => $totalCitas,
+            'cliente'         => $cliente,
+            'citas'           => $citas,
+            'totalGastado'    => $totalGastado,
+            'totalCitas'      => $totalCitas,
             'citasPendientes' => $citasPendientes,
         ]);
     }
 
+    // =====================================================================
+    // CRUD EMPLEADOS
+    // =====================================================================
 
+    #[Route('/empleados', name: 'app_admin_empleados')]
+    public function listaEmpleados(UserRepository $userRepository): Response
+    {
+        return $this->render('admin/empleados.html.twig', [
+            'empleados' => $userRepository->findEmpleados(),
+        ]);
+    }
+
+    #[Route('/empleado/nuevo', name: 'app_admin_empleado_nuevo')]
+    #[Route('/empleado/{id}/editar', name: 'app_admin_empleado_editar')]
+    public function formEmpleado(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher,
+        ?User $empleado = null
+    ): Response {
+        $editando = $empleado !== null;
+
+        if (!$editando) {
+            $empleado = new User();
+            // Contraseña temporal — el empleado deberá cambiarla
+            $empleado->setPassword($hasher->hashPassword($empleado, 'Venus2024!'));
+        }
+
+        $form = $this->createForm(EmpleadoType::class, $empleado);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($empleado);
+            $em->flush();
+
+            $this->addFlash(
+                'success',
+                $editando ? 'Empleado actualizado correctamente.' : 'Empleado creado. Contraseña inicial: Venus2024!'
+            );
+
+            return $this->redirectToRoute('app_admin_empleados');
+        }
+
+        return $this->render('admin/empleado_form.html.twig', [
+            'form'     => $form->createView(),
+            'editando' => $editando,
+            'empleado' => $empleado,
+        ]);
+    }
+
+    #[Route('/empleado/{id}/eliminar', name: 'app_admin_empleado_eliminar')]
+    public function eliminarEmpleado(User $empleado, EntityManagerInterface $em): Response
+    {
+        // Seguridad: no se puede eliminar al propio admin logueado
+        if ($empleado === $this->getUser()) {
+            $this->addFlash('error', 'No puedes eliminarte a ti mismo.');
+            return $this->redirectToRoute('app_admin_empleados');
+        }
+
+        // Quitamos el rol en lugar de borrar el usuario (preserva historial de citas)
+        $empleado->setRoles([]);
+        $em->flush();
+
+        $this->addFlash('success', 'El empleado ha sido degradado a cliente. Sus citas históricas se conservan.');
+        return $this->redirectToRoute('app_admin_empleados');
+    }
+
+    // =====================================================================
+    // CRUD LOCAL
+    // =====================================================================
+
+    #[Route('/local/editar', name: 'app_admin_local_editar')]
+    public function editarLocal(Request $request, EntityManagerInterface $em): Response
+    {
+        $local = $em->getRepository(Local::class)->findOneBy([]);
+
+        if (!$local) {
+            // Si no existe, creamos uno nuevo
+            $local = new Local();
+            $local->setActivo(true);
+        }
+
+        $form = $this->createForm(LocalType::class, $local);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($local);
+            $em->flush();
+
+            $this->addFlash('success', 'Datos del local actualizados correctamente.');
+            return $this->redirectToRoute('app_admin_local_editar');
+        }
+
+        return $this->render('admin/local_form.html.twig', [
+            'form'  => $form->createView(),
+            'local' => $local,
+        ]);
+    }
 }
