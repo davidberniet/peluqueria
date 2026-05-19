@@ -145,53 +145,36 @@
 
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80" alt="Corte y peinado" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-				</div>
-				<div class="p-6">
-					<div class="flex justify-between items-start mb-3">
-						<h3 class="text-lg font-bold text-gray-900">Corte & Peinado</h3>
-						<span class="text-pink-600 font-extrabold text-lg">desde 25€</span>
-					</div>
-					<p class="text-gray-500 text-sm mb-5">Corte personalizado adaptado a tu tipo de rostro y estilo de vida.</p>
-					<a href="{{ path('app_servicios') }}" class="block w-full text-center bg-gray-50 hover:bg-pink-600 text-gray-700 hover:text-white font-bold py-2.5 rounded-xl transition-all duration-300 text-sm border border-gray-100 hover:border-transparent">
-						Reservar
-					</a>
-				</div>
-			</div>
+			{% for servicio in servicios_destacados %}
+				{% set imagen = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80' %}
+				{% set desc = 'Corte personalizado adaptado a tu tipo de rostro y estilo de vida.' %}
+				
+				{% if loop.index == 2 %}
+					{% set imagen = 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=600&q=80' %}
+					{% set desc = 'Balayage, mechas, tinte uniforme… Tu color soñado con productos premium.' %}
+				{% elseif loop.index == 3 %}
+					{% set imagen = 'https://images.unsplash.com/photo-1519735777090-ec97162dc266?auto=format&fit=crop&w=600&q=80' %}
+					{% set desc = 'Hidratación profunda, keratina y más. Dale a tu cabello el mimo que merece.' %}
+				{% endif %}
 
-			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=600&q=80" alt="Coloración" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-				</div>
-				<div class="p-6">
-					<div class="flex justify-between items-start mb-3">
-						<h3 class="text-lg font-bold text-gray-900">Coloración</h3>
-						<span class="text-pink-600 font-extrabold text-lg">desde 60€</span>
+				<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+					<div class="h-48 overflow-hidden">
+						<img src="{{ imagen }}" alt="{{ servicio.nombre }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
 					</div>
-					<p class="text-gray-500 text-sm mb-5">Balayage, mechas, tinte uniforme… Tu color soñado con productos premium.</p>
-					<a href="{{ path('app_servicios') }}" class="block w-full text-center bg-gray-50 hover:bg-pink-600 text-gray-700 hover:text-white font-bold py-2.5 rounded-xl transition-all duration-300 text-sm border border-gray-100 hover:border-transparent">
-						Reservar
-					</a>
-				</div>
-			</div>
-
-			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-				<div class="h-48 overflow-hidden">
-					<img src="https://images.unsplash.com/photo-1519735777090-ec97162dc266?auto=format&fit=crop&w=600&q=80" alt="Tratamiento" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-				</div>
-				<div class="p-6">
-					<div class="flex justify-between items-start mb-3">
-						<h3 class="text-lg font-bold text-gray-900">Tratamiento Capilar</h3>
-						<span class="text-pink-600 font-extrabold text-lg">desde 40€</span>
+					<div class="p-6">
+						<div class="flex justify-between items-start mb-3">
+							<h3 class="text-lg font-bold text-gray-900">{{ servicio.nombre }}</h3>
+							<span class="text-pink-600 font-extrabold text-lg">{{ servicio.precio|number_format(2, ',', '.') }}€</span>
+						</div>
+						<p class="text-gray-500 text-sm mb-5">{{ desc }}</p>
+						<a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="block w-full text-center bg-gray-50 hover:bg-pink-600 text-gray-700 hover:text-white font-bold py-2.5 rounded-xl transition-all duration-300 text-sm border border-gray-100 hover:border-transparent">
+							Reservar
+						</a>
 					</div>
-					<p class="text-gray-500 text-sm mb-5">Hidratación profunda, keratina y más. Dale a tu cabello el mimo que merece.</p>
-					<a href="{{ path('app_servicios') }}" class="block w-full text-center bg-gray-50 hover:bg-pink-600 text-gray-700 hover:text-white font-bold py-2.5 rounded-xl transition-all duration-300 text-sm border border-gray-100 hover:border-transparent">
-						Reservar
-					</a>
 				</div>
-			</div>
+			{% else %}
+				<p class="text-gray-500 col-span-3 text-center py-6">No hay servicios destacados disponibles en este momento.</p>
+			{% endfor %}
 
 		</div>
 	</section>

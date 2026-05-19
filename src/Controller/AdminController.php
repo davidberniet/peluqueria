@@ -24,9 +24,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Twig\Environment as TwigEnvironment;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -171,20 +175,68 @@ class AdminController extends AbstractController
 
     // --- CONFIRMAR CITA ---
     #[Route('/cita/{id}/confirmar', name: 'app_admin_cita_confirmar')]
-    public function confirmarCita(Cita $cita, EntityManagerInterface $em): Response
-    {
+    public function confirmarCita(
+        Cita $cita, 
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        TwigEnvironment $twig,
+        Request $request
+    ): Response {
         $cita->setEstado('Confirmada');
         $em->flush();
+
+        // Enviar email de confirmación
+        try {
+            $htmlContent = $twig->render('emails/confirmacion_cita.html.twig', [
+                'cita'    => $cita,
+                'app_url' => $request->getSchemeAndHttpHost(),
+            ]);
+
+            $email = (new Email())
+                ->from('noreply@venus-peluqueria.com')
+                ->to($cita->getUsuario()->getEmail())
+                ->subject('✂️ ¡Tu cita en Venus ha sido confirmada!')
+                ->html($htmlContent);
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Cita confirmada y cliente notificado.');
+        } catch (TransportExceptionInterface $e) {
+            $this->addFlash('error', 'Cita confirmada, pero hubo un error enviando el email al cliente.');
+        }
 
         return $this->redirectToRoute('app_admin_dashboard', [], 301, '#citas');
     }
 
     // --- CANCELAR CITA ---
     #[Route('/cita/{id}/cancelar', name: 'app_admin_cita_cancelar')]
-    public function cancelarCita(Cita $cita, EntityManagerInterface $em): Response
-    {
+    public function cancelarCita(
+        Cita $cita, 
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        TwigEnvironment $twig,
+        Request $request
+    ): Response {
         $cita->setEstado('Cancelada');
         $em->flush();
+
+        // Enviar email de cancelación
+        try {
+            $htmlContent = $twig->render('emails/cancelacion_cita.html.twig', [
+                'cita'    => $cita,
+                'app_url' => $request->getSchemeAndHttpHost(),
+            ]);
+
+            $email = (new Email())
+                ->from('noreply@venus-peluqueria.com')
+                ->to($cita->getUsuario()->getEmail())
+                ->subject('❌ Actualización sobre tu cita en Venus')
+                ->html($htmlContent);
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Cita cancelada y cliente notificado.');
+        } catch (TransportExceptionInterface $e) {
+            $this->addFlash('error', 'Cita cancelada, pero hubo un error enviando el email al cliente.');
+        }
 
         return $this->redirectToRoute('app_admin_dashboard', [], 301, '#citas');
     }

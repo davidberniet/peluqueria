@@ -12,10 +12,14 @@ use Symfony\Component\Routing\Attribute\Route;
 class MainController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(ServicioRepository $repo): Response
     {
+        // Cogemos los 3 primeros servicios activos para mostrarlos en la home
+        $serviciosDestacados = $repo->findBy(['activo' => true], ['id' => 'ASC'], 3);
+
         return $this->render('main/index.html.twig', [
             'controller_name' => 'Peluquería Venus',
+            'servicios_destacados' => $serviciosDestacados,
         ]);
     }
 

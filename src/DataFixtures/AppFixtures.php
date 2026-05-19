@@ -45,10 +45,11 @@ class AppFixtures extends Fixture
 
         // 2. SERVICIOS
         $serviciosLocal1 = [
-            ['Corte Caballero', 30, 15.50, 'Peluquería'],
             ['Corte Señora', 60, 25.00, 'Peluquería'],
-            ['Tinte', 90, 45.00, 'Coloración'],
             ['Peinado Gala', 45, 20.00, 'Estética'],
+            ['Tratamiento Capilar', 60, 40.00, 'Bienestar'],
+            ['Corte Caballero', 30, 15.50, 'Peluquería'],
+            ['Coloración', 120, 60.00, 'Coloración']
         ];
 
         $serviciosLocal2 = [

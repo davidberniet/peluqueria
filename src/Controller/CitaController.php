@@ -15,12 +15,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Twig\Environment as TwigEnvironment;
 
 #[IsGranted('ROLE_USER')]
 class CitaController extends AbstractController
@@ -46,9 +42,7 @@ class CitaController extends AbstractController
         CitaRepository $citaRepository,
         DiaBloqueadoRepository $diasBloqueadosRepo,
         ReglaHorarioRepository $reglasRepo,
-        HorarioRepository $horarioRepo,
-        MailerInterface $mailer,
-        TwigEnvironment $twig
+        HorarioRepository $horarioRepo
     ): Response {
         $servicio = $em->getRepository(Servicio::class)->find($servicioId);
         $local = $em->getRepository(Local::class)->find($localId);
@@ -90,25 +84,6 @@ class CitaController extends AbstractController
 
             $em->persist($cita);
             $em->flush();
-
-            // Envío de email de confirmación
-            try {
-                $htmlContent = $twig->render('emails/confirmacion_cita.html.twig', [
-                    'cita'    => $cita,
-                    'app_url' => $request->getSchemeAndHttpHost(),
-                ]);
-
-                $email = (new Email())
-                    ->from('noreply@venus-peluqueria.com')
-                    ->to($cita->getUsuario()->getEmail())
-                    ->subject('✂️ ¡Tu cita en Venus está confirmada!')
-                    ->html($htmlContent);
-
-                $mailer->send($email);
-            } catch (TransportExceptionInterface $e) {
-                // El email falla silenciosamente: la reserva ya está guardada
-            }
-            // Fin envío email
 
             return $this->redirectToRoute('app_cliente_perfil', ['cita_confirmada' => 'true']);
         }
