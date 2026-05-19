@@ -43,6 +43,11 @@ class ProductoType extends AbstractType
                 'label' => '¿En qué local se vende?',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
             ])
+            ->add('stock', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+                'label' => 'Unidades en Stock',
+                'required' => true,
+                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none', 'min' => 0]
+            ])
             ->add('imagen', FileType::class, [
                 'label' => 'Foto del Producto (Opcional)',
                 'mapped' => false, // Importante: le decimos a Symfony que lo gestionaremos a mano

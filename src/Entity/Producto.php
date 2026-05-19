@@ -98,6 +98,9 @@ class Producto
         return $this;
     }
 
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    private ?int $stock = 0;
+
     public function getLocal(): ?Local
     {
         return $this->local;
@@ -106,6 +109,18 @@ class Producto
     public function setLocal(?Local $local): static
     {
         $this->local = $local;
+
+        return $this;
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $stock): static
+    {
+        $this->stock = $stock;
 
         return $this;
     }

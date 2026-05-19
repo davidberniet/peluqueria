@@ -161,4 +161,36 @@ class CitaController extends AbstractController
 
         return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
     }
+
+    #[Route('/cita/valorar/{id}', name: 'app_cita_valorar', methods: ['GET', 'POST'])]
+    public function valorar(Cita $cita, Request $request, EntityManagerInterface $em): Response
+    {
+        if ($cita->getUsuario() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('No puedes valorar una cita que no es tuya.');
+        }
+
+        if ($cita->getValoracion()) {
+            $this->addFlash('error_perfil', 'Esta cita ya ha sido valorada.');
+            return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
+        }
+
+        if ($request->isMethod('POST')) {
+            $estrellas = (int) $request->request->get('estrellas');
+            $comentario = $request->request->get('comentario');
+
+            if ($estrellas >= 1 && $estrellas <= 5) {
+                $cita->setValoracion($estrellas);
+                $cita->setComentarioValoracion($comentario);
+                
+                $em->flush();
+
+                $this->addFlash('success_perfil', '¡Gracias por tu valoración!');
+                return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
+            }
+        }
+
+        return $this->render('cita/valorar.html.twig', [
+            'cita' => $cita
+        ]);
+    }
 }

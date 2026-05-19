@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Email Enviado | Venus{% endblock %}
+
+{% block body %}
+<div class="flex items-center justify-center min-h-[70vh]">
+    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+        
+        <div class="w-16 h-16 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-extrabold text-gray-900 mb-4">Revisa tu correo</h1>
+        
+        <p class="text-gray-600 mb-4">
+            Si existe una cuenta asociada a ese email, te acabamos de enviar un enlace para restablecer tu contraseña.
+        </p>
+        
+        <div class="bg-gray-50 rounded-xl p-4 mb-6">
+            <p class="text-sm text-gray-500">
+                Este enlace caduca en {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
+            </p>
+        </div>
+
+        <p class="text-sm text-gray-500">
+            ¿No lo has recibido? Revisa tu carpeta de spam o 
+            <a href="{{ path('app_forgot_password_request') }}" class="text-pink-600 font-bold hover:underline">inténtalo de nuevo</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

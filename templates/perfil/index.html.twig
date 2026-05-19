@@ -210,6 +210,18 @@
 								<a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors">
 									Cancelar
 								</a>
+							{% elseif cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+								{% if not cita.valoracion %}
+									<a href="{{ path('app_cita_valorar', {'id': cita.id}) }}" class="bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+										⭐ Valorar
+									</a>
+								{% else %}
+									<div class="text-yellow-400 text-lg" title="Tu valoración: {{ cita.valoracion }}/5">
+										{% for i in 1..5 %}
+											{% if i <= cita.valoracion %}★{% else %}☆{% endif %}
+										{% endfor %}
+									</div>
+								{% endif %}
 							{% endif %}
 						</div>
 					</div>
@@ -272,6 +284,18 @@
 										<a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl border border-red-200 transition-colors text-sm">
 											Cancelar
 										</a>
+									{% elseif cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+										{% if not cita.valoracion %}
+											<a href="{{ path('app_cita_valorar', {'id': cita.id}) }}" class="bg-yellow-50 hover:bg-yellow-400 hover:text-white text-yellow-600 font-bold px-4 py-2 rounded-xl border border-yellow-200 transition-colors text-sm">
+												Valorar
+											</a>
+										{% else %}
+											<span class="text-yellow-400 text-lg" title="{{ cita.valoracion }}/5">
+												{% for i in 1..5 %}
+													{% if i <= cita.valoracion %}★{% else %}☆{% endif %}
+												{% endfor %}
+											</span>
+										{% endif %}
 									{% else %}
 										<span class="text-gray-300 text-sm">—</span>
 									{% endif %}

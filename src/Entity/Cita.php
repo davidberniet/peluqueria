@@ -187,9 +187,39 @@ class Cita
         return $this;
     }
 
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    private ?int $valoracion = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $comentarioValoracion = null;
+
     public function removeProducto(Producto $producto): static
     {
         $this->productos->removeElement($producto);
+
+        return $this;
+    }
+
+    public function getValoracion(): ?int
+    {
+        return $this->valoracion;
+    }
+
+    public function setValoracion(?int $valoracion): static
+    {
+        $this->valoracion = $valoracion;
+
+        return $this;
+    }
+
+    public function getComentarioValoracion(): ?string
+    {
+        return $this->comentarioValoracion;
+    }
+
+    public function setComentarioValoracion(?string $comentarioValoracion): static
+    {
+        $this->comentarioValoracion = $comentarioValoracion;
 
         return $this;
     }
