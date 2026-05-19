@@ -20,17 +20,17 @@ class ProductoController extends AbstractController
         ]);
     }
 
-    // --- AÑADIR A LA PRÓXIMA CITA ---
+    // Añadir a la próxima cita
     #[Route('/producto/{id}/añadir-cita', name: 'app_producto_add_cita')]
     public function añadirACita(Producto $producto, CitaRepository $citaRepository, EntityManagerInterface $em): Response
     {
-        // 1. Comprobamos que el usuario está logueado
+        // Comprobamos que el usuario está logueado
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        // 2. Buscamos la próxima cita futura de este usuario (que no esté cancelada)
+        // Buscamos la próxima cita futura de este usuario (que no esté cancelada)
         $citasFuturas = $citaRepository->createQueryBuilder('c')
             ->where('c.usuario = :user')
             ->andWhere('c.fechaInicio >= :hoy')
@@ -43,13 +43,13 @@ class ProductoController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // 3. Si no tiene citas futuras, no puede reservar el producto
+        // Si no tiene citas futuras, no puede reservar el producto
         if (empty($citasFuturas)) {
             $this->addFlash('error', 'No tienes ninguna cita próxima. ¡Reserva una primero!');
             return $this->redirectToRoute('app_servicios');
         }
 
-        // 4. Si tiene cita, le metemos el producto dentro
+        // Si tiene cita, le metemos el producto dentro
         $cita = $citasFuturas[0];
         $cita->addProducto($producto);
         $em->flush(); // Guardamos en la base de datos

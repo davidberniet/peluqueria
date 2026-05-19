@@ -65,10 +65,7 @@ class AdminController extends AbstractController
 
         $diasBloqueados = $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']);
 
-        $local = $em->getRepository(Local::class)->findOneBy([]);
-        if (!$local) {
-            throw $this->createNotFoundException('Local no encontrado');
-        }
+        $locales = $em->getRepository(Local::class)->findAll();
 
         $empleados = $userRepository->findEmpleados();
 
@@ -78,14 +75,14 @@ class AdminController extends AbstractController
             'ingresos_hoy'   => $ingresosHoy,
             'total_clientes' => $totalClientes,
             'diasBloqueados' => $diasBloqueados,
-            'reglasHorario'  => $reglaHorarioRepo->findBy(['local' => $local], ['diaSemana' => 'ASC']),
-            'horarios'       => $horarioRepo->findBy(['local' => $local]),
+            'reglasHorario'  => $reglaHorarioRepo->findAll(),
+            'horarios'       => $horarioRepo->findAll(),
             'empleados'      => $empleados,
-            'local'          => $local,
+            'locales'        => $locales,
         ]);
     }
 
-    // ✅ NUEVO: Añadir un día bloqueado desde el formulario del panel
+    // Añadir un día bloqueado desde el formulario del panel
     #[Route('/dias-bloqueados/nuevo', name: 'admin_dias_bloqueados', methods: ['POST'])]
     public function crearDiaBloqueado(Request $request, EntityManagerInterface $em): Response
     {
@@ -438,15 +435,26 @@ class AdminController extends AbstractController
     // CRUD LOCAL
     // =====================================================================
 
-    #[Route('/local/editar', name: 'app_admin_local_editar')]
-    public function editarLocal(Request $request, EntityManagerInterface $em): Response
+    #[Route('/locales', name: 'app_admin_locales')]
+    public function listaLocales(EntityManagerInterface $em): Response
     {
-        $local = $em->getRepository(Local::class)->findOneBy([]);
+        $locales = $em->getRepository(Local::class)->findAll();
+
+        return $this->render('admin/locales.html.twig', [
+            'locales' => $locales,
+        ]);
+    }
+
+    #[Route('/local/nuevo', name: 'app_admin_local_nuevo')]
+    #[Route('/local/{id}/editar', name: 'app_admin_local_editar')]
+    public function formLocal(Request $request, EntityManagerInterface $em, ?Local $local = null): Response
+    {
+        $editando = true;
 
         if (!$local) {
-            // Si no existe, creamos uno nuevo
             $local = new Local();
             $local->setActivo(true);
+            $editando = false;
         }
 
         $form = $this->createForm(LocalType::class, $local);
@@ -457,12 +465,23 @@ class AdminController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Datos del local actualizados correctamente.');
-            return $this->redirectToRoute('app_admin_local_editar');
+            return $this->redirectToRoute('app_admin_locales');
         }
 
         return $this->render('admin/local_form.html.twig', [
-            'form'  => $form->createView(),
-            'local' => $local,
+            'form'     => $form->createView(),
+            'local'    => $local,
+            'editando' => $editando,
         ]);
+    }
+
+    #[Route('/local/{id}/eliminar', name: 'app_admin_local_eliminar')]
+    public function eliminarLocal(Local $local, EntityManagerInterface $em): Response
+    {
+        $local->setActivo(false);
+        $em->flush();
+
+        $this->addFlash('success', 'Local desactivado correctamente.');
+        return $this->redirectToRoute('app_admin_locales');
     }
 }

@@ -1,134 +1,128 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Empleados | Panel Admin | Venus{% endblock %}
+{% block title %}Empleados | Panel Admin | Venus
+{% endblock %}
 
 {% block body %}
-<div class="max-w-5xl mx-auto">
+	<div
+		class="max-w-5xl mx-auto">
 
-	{# ===== CABECERA ===== #}
-	<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-		<div>
-			<a href="{{ path('app_admin_dashboard') }}" class="text-sm text-gray-400 hover:text-pink-600 transition mb-2 inline-flex items-center gap-1">
-				← Volver al panel
-			</a>
-			<h1 class="text-3xl font-extrabold text-gray-900">👤 Gestión de Empleados</h1>
-			<p class="text-gray-500 mt-1">Añade, edita o elimina los miembros del equipo.</p>
-		</div>
-		<a href="{{ path('app_admin_empleado_nuevo') }}"
-		   class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors flex items-center gap-2 text-base shrink-0">
-			➕ Nuevo empleado
-		</a>
-	</div>
+		{# ===== CABECERA ===== #}
+		<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+			<div>
+				<h1 class="text-3xl font-extrabold text-gray-900">Gestión de Empleados</h1>
+				<p class="text-gray-500 mt-1">Añade, edita o elimina los miembros del equipo.</p>
+			</div>
 
-	{# ===== FLASH MESSAGES ===== #}
-	{% for msg in app.flashes('success') %}
-		<div class="mb-6 bg-green-50 border border-green-200 text-green-700 font-semibold px-5 py-4 rounded-xl">✅ {{ msg }}</div>
-	{% endfor %}
-	{% for msg in app.flashes('error') %}
-		<div class="mb-6 bg-red-50 border border-red-200 text-red-700 font-semibold px-5 py-4 rounded-xl">❌ {{ msg }}</div>
-	{% endfor %}
-
-	{# ===== TABLA DE EMPLEADOS ===== #}
-	<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-
-		{% if empleados is empty %}
-			<div class="p-12 text-center">
-				<div class="text-6xl mb-4">👤</div>
-				<h3 class="text-xl font-extrabold text-gray-900 mb-2">Sin empleados registrados</h3>
-				<p class="text-gray-500 mb-6">Añade al menos un empleado para que los clientes puedan elegir estilista al reservar.</p>
-				<a href="{{ path('app_admin_empleado_nuevo') }}"
-				   class="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
-					➕ Añadir primer empleado
+			<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+				<a href="{{ path('app_admin_dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors text-center">
+					&larr; Volver al Panel
+				</a>
+				<a href="{{ path('app_admin_empleado_nuevo') }}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors transform hover:-translate-y-0.5 text-center">
+					+ Nuevo empleado
 				</a>
 			</div>
-		{% else %}
+		</div>
 
-			{# --- Desktop: tabla --- #}
-			<div class="hidden md:block overflow-x-auto">
-				<table class="w-full text-left border-collapse">
-					<thead>
-						<tr class="text-gray-400 text-xs uppercase bg-gray-50 border-b border-gray-100">
-							<th class="px-6 py-4 font-semibold">Empleado</th>
-							<th class="px-6 py-4 font-semibold">Teléfono</th>
-							<th class="px-6 py-4 font-semibold">Rol</th>
-							<th class="px-6 py-4 font-semibold text-right">Acciones</th>
-						</tr>
-					</thead>
-					<tbody class="text-sm text-gray-700 divide-y divide-gray-50">
-						{% for empleado in empleados %}
-							<tr class="hover:bg-gray-50 transition">
-								<td class="px-6 py-4">
-									<p class="font-bold text-gray-900 text-base">{{ empleado.nombre }}</p>
-									<p class="text-gray-500 text-xs mt-0.5">{{ empleado.email }}</p>
-								</td>
-								<td class="px-6 py-4 text-gray-600">
-									{{ empleado.telefono ?? '—' }}
-								</td>
-								<td class="px-6 py-4">
-									{% if 'ROLE_ADMIN' in empleado.roles %}
-										<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">🛡️ Admin</span>
-									{% else %}
-										<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">✂️ Empleado</span>
-									{% endif %}
-								</td>
-								<td class="px-6 py-4 text-right">
-									<div class="flex justify-end gap-2">
-										<a href="{{ path('app_admin_empleado_editar', {'id': empleado.id}) }}"
-										   class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm transition-colors">
-											✏️ Editar
-										</a>
-										{% if empleado != app.user %}
-										<a href="{{ path('app_admin_empleado_eliminar', {'id': empleado.id}) }}"
-										   onclick="return confirm('¿Quitar el rol de empleado a {{ empleado.nombre }}? El usuario se convertirá en cliente.')"
-										   class="bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl border border-red-200 text-sm transition-colors">
-											🚫 Quitar rol
-										</a>
-										{% endif %}
-									</div>
-								</td>
+
+		{# ===== TABLA DE EMPLEADOS ===== #}
+		<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+			{% if empleados is empty %}
+				<div class="p-12 text-center flex flex-col items-center">
+					<div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
+						<svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+						</svg>
+					</div>
+					<h3 class="text-xl font-extrabold text-gray-900 mb-2">Sin empleados registrados</h3>
+					<p class="text-gray-500 mb-6">Añade al menos un empleado para que los clientes puedan elegir estilista al reservar.</p>
+					<a href="{{ path('app_admin_empleado_nuevo') }}" class="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
+						Añadir primer empleado
+					</a>
+				</div>
+			{% else %}
+
+				{# --- Desktop: tabla --- #}
+				<div class="hidden md:block overflow-x-auto">
+					<table class="w-full text-left border-collapse">
+						<thead>
+							<tr class="text-gray-400 text-xs uppercase bg-gray-50 border-b border-gray-100">
+								<th class="px-6 py-4 font-semibold">Empleado</th>
+								<th class="px-6 py-4 font-semibold">Teléfono</th>
+								<th class="px-6 py-4 font-semibold">Rol</th>
+								<th class="px-6 py-4 font-semibold text-right">Acciones</th>
 							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
+						</thead>
+						<tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+							{% for empleado in empleados %}
+								<tr class="hover:bg-gray-50 transition">
+									<td class="px-6 py-4">
+										<p class="font-bold text-gray-900 text-base">{{ empleado.nombre }}</p>
+										<p class="text-gray-500 text-xs mt-0.5">{{ empleado.email }}</p>
+									</td>
+									<td class="px-6 py-4 text-gray-600">
+										{{ empleado.telefono ?? '—' }}
+									</td>
+									<td class="px-6 py-4">
+										{% if 'ROLE_ADMIN' in empleado.roles %}
+											<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">Admin</span>
+										{% else %}
+											<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Empleado</span>
+										{% endif %}
+									</td>
+									<td class="px-6 py-4 text-right">
+										<div class="flex justify-end gap-2">
+											<a href="{{ path('app_admin_empleado_editar', {'id': empleado.id}) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm transition-colors">
+												Editar
+											</a>
+											{% if empleado != app.user %}
+												<a href="{{ path('app_admin_empleado_eliminar', {'id': empleado.id}) }}" onclick="return confirm('¿Quitar el rol de empleado a {{ empleado.nombre }}? El usuario se convertirá en cliente.')" class="bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl border border-red-200 text-sm transition-colors">
+													Quitar rol
+												</a>
+											{% endif %}
+										</div>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
 
-			{# --- Mobile: tarjetas --- #}
-			<div class="block md:hidden divide-y divide-gray-100">
-				{% for empleado in empleados %}
-					<div class="p-5">
-						<div class="flex justify-between items-start mb-3">
-							<div>
-								<p class="font-extrabold text-gray-900 text-lg">{{ empleado.nombre }}</p>
-								<p class="text-gray-500 text-sm">{{ empleado.email }}</p>
-								{% if empleado.telefono %}
-									<p class="text-pink-600 text-sm font-bold mt-1">📞 {{ empleado.telefono }}</p>
+				{# --- Mobile: tarjetas --- #}
+				<div class="block md:hidden divide-y divide-gray-100">
+					{% for empleado in empleados %}
+						<div class="p-5">
+							<div class="flex justify-between items-start mb-3">
+								<div>
+									<p class="font-extrabold text-gray-900 text-lg">{{ empleado.nombre }}</p>
+									<p class="text-gray-500 text-sm">{{ empleado.email }}</p>
+									{% if empleado.telefono %}
+										<p class="text-pink-600 text-sm font-bold mt-1">{{ empleado.telefono }}</p>
+									{% endif %}
+								</div>
+								{% if 'ROLE_ADMIN' in empleado.roles %}
+									<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">Admin</span>
+								{% else %}
+									<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Empleado</span>
 								{% endif %}
 							</div>
-							{% if 'ROLE_ADMIN' in empleado.roles %}
-								<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">🛡️ Admin</span>
-							{% else %}
-								<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">✂️ Empleado</span>
-							{% endif %}
+							<div class="flex gap-2 mt-3">
+								<a href="{{ path('app_admin_empleado_editar', {'id': empleado.id}) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
+									Editar
+								</a>
+								{% if empleado != app.user %}
+									<a href="{{ path('app_admin_empleado_eliminar', {'id': empleado.id}) }}" onclick="return confirm('¿Quitar el rol de empleado?')" class="flex-1 text-center bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold py-2.5 rounded-xl border border-red-200 text-sm transition-colors">
+										Quitar rol
+									</a>
+								{% endif %}
+							</div>
 						</div>
-						<div class="flex gap-2 mt-3">
-							<a href="{{ path('app_admin_empleado_editar', {'id': empleado.id}) }}"
-							   class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
-								✏️ Editar
-							</a>
-							{% if empleado != app.user %}
-							<a href="{{ path('app_admin_empleado_eliminar', {'id': empleado.id}) }}"
-							   onclick="return confirm('¿Quitar el rol de empleado?')"
-							   class="flex-1 text-center bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold py-2.5 rounded-xl border border-red-200 text-sm transition-colors">
-								🚫 Quitar rol
-							</a>
-							{% endif %}
-						</div>
-					</div>
-				{% endfor %}
-			</div>
+					{% endfor %}
+				</div>
 
-		{% endif %}
+			{% endif %}
+		</div>
+
 	</div>
-
-</div>
 {% endblock %}

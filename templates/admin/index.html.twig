@@ -12,26 +12,36 @@
 			<p class="text-gray-500 mt-1">Bienvenido, Jefe. Aquí tienes el resumen de las citas.</p>
 		</div>
 		<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-			<a href="{{ path('app_admin_local_editar') }}" class="bg-white border-2 border-gray-200 hover:border-gray-400 text-gray-700 font-bold py-3 px-5 rounded-xl transition-colors flex items-center justify-center gap-2 text-base">
-				🏪 Local
+			<a href="{{ path('app_admin_locales') }}" class="bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+				Locales
 			</a>
-			<a href="{{ path('app_admin_empleados') }}" class="bg-white border-2 border-gray-200 hover:border-gray-400 text-gray-700 font-bold py-3 px-5 rounded-xl transition-colors flex items-center justify-center gap-2 text-base">
-				👤 Equipo
+			<a href="{{ path('app_admin_empleados') }}" class="bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+				Equipo
 			</a>
-			<a href="{{ path('app_admin_productos') }}" class="bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50 font-bold py-3 px-5 rounded-xl transition-colors flex items-center justify-center gap-2 text-base">
-				🛍️ Tienda
+			<a href="{{ path('app_admin_productos') }}" class="bg-white border border-gray-200 hover:border-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+				Tienda
 			</a>
-			<a href="{{ path('app_admin_servicios') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-5 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-base">
-				✂️ Servicios
+			<a href="{{ path('app_admin_servicios') }}" class="bg-gray-900 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+				Servicios
 			</a>
 		</div>
 	</div>
 
+	{# ===== FLASH MESSAGES ===== #}
+	{% for msg in app.flashes('success') %}
+		<div class="mb-6 bg-green-50 border border-green-200 text-green-700 font-semibold px-5 py-4 rounded-xl">{{ msg }}</div>
+	{% endfor %}
+	{% for msg in app.flashes('error') %}
+		<div class="mb-6 bg-red-50 border border-red-200 text-red-700 font-semibold px-5 py-4 rounded-xl">{{ msg }}</div>
+	{% endfor %}
+
 	{# ===== TARJETAS DE ESTADÍSTICAS ===== #}
 	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
 		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-			<div class="bg-pink-100 p-4 rounded-xl shrink-0">
-				<span class="text-3xl">📅</span>
+			<div class="bg-pink-100 p-4 rounded-xl shrink-0 flex items-center justify-center w-16 h-16">
+				<svg class="w-8 h-8 text-pink-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+				</svg>
 			</div>
 			<div>
 				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Citas Hoy</p>
@@ -39,8 +49,10 @@
 			</div>
 		</div>
 		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-			<div class="bg-green-100 p-4 rounded-xl shrink-0">
-				<span class="text-3xl">💰</span>
+			<div class="bg-green-100 p-4 rounded-xl shrink-0 flex items-center justify-center w-16 h-16">
+				<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+				</svg>
 			</div>
 			<div>
 				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ingresos Hoy</p>
@@ -48,8 +60,10 @@
 			</div>
 		</div>
 		<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-			<div class="bg-blue-100 p-4 rounded-xl shrink-0">
-				<span class="text-3xl">👥</span>
+			<div class="bg-blue-100 p-4 rounded-xl shrink-0 flex items-center justify-center w-16 h-16">
+				<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+				</svg>
 			</div>
 			<div>
 				<p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Clientes</p>
@@ -62,11 +76,11 @@
 	<div id="citas" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 		<div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
 			<div>
-				<h2 class="text-xl font-extrabold text-gray-900">📅 Próximas Citas</h2>
-				<p class="text-gray-400 text-sm mt-0.5">Las 5 más cercanas</p>
+				<h2 class="text-lg font-semibold text-gray-900">Próximas citas</h2>
+				<p class="text-gray-400 text-xs mt-0.5">Las 5 más cercanas</p>
 			</div>
-			<a href="{{ path('app_admin_citas') }}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
-				Ver todas →
+			<a href="{{ path('app_admin_citas') }}" class="bg-gray-900 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-xs">
+				Ver todas
 			</a>
 		</div>
 
@@ -107,22 +121,22 @@
 								<span class="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm font-bold">
 									Completada</span>
 							{% elseif cita.estado == 'Pendiente' %}
-								<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">⏳ Pendiente</span>
+								<span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">Pendiente</span>
 							{% elseif cita.estado == 'Confirmada' %}
-								<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">✅ Confirmada</span>
+								<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">Confirmada</span>
 							{% else %}
-								<span class="px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">❌ Cancelada</span>
+								<span class="px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">Cancelada</span>
 							{% endif %}
 						</div>
 						<div class="flex flex-col gap-2">
 							{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
 								<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-xl text-sm text-center transition-colors">
-									✅ Confirmar
+									Confirmar
 								</a>
 							{% endif %}
 							{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
 								<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-sm text-center transition-colors">
-									❌ Cancelar
+									Cancelar
 								</a>
 							{% endif %}
 						</div>
@@ -182,19 +196,19 @@
 								{% elseif cita.estado == 'Confirmada' %}
 									<span class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-bold">Confirmada</span>
 								{% else %}
-									<span class="px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">❌ Cancelada</span>
+									<span class="px-3 py-1.5 bg-red-100 text-red-800 rounded-full text-sm font-bold">Cancelada</span>
 								{% endif %}
 							</td>
 							<td class="px-6 py-4 text-right">
 								<div class="flex justify-end gap-2">
 									{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
 										<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-500 hover:text-white text-green-700 font-bold px-4 py-2 rounded-xl border border-green-200 transition-colors text-sm">
-											✅ Confirmar
+											Confirmar
 										</a>
 									{% endif %}
 									{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
 										<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-500 hover:text-white text-red-700 font-bold px-4 py-2 rounded-xl border border-red-200 transition-colors text-sm">
-											❌ Cancelar
+											Cancelar
 										</a>
 									{% endif %}
 								</div>
@@ -214,23 +228,22 @@
 
 	{# ===== SEPARADOR ===== #}
 	<div class="mt-14 mb-6 border-t border-gray-200 pt-10">
-		<h2 class="text-2xl font-extrabold text-gray-900">⚙️ Configuración del Negocio</h2>
+		<h2 class="text-2xl font-extrabold text-gray-900">Configuración del Negocio</h2>
 		<p class="text-gray-400 text-base mt-1">Gestiona cuándo y cómo se pueden hacer reservas.</p>
 	</div>
 
 	{# ===== 1. HORARIO BASE ===== #}
 	<div id="horario" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
 		<div class="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50">
-			<span class="text-3xl">🕐</span>
 			<div>
-				<h2 class="text-xl font-extrabold text-gray-900">Horario de Trabajo</h2>
-				<p class="text-gray-400 text-sm mt-0.5">Las franjas en las que se aceptan reservas. Puedes tener varias (mañana y tarde).</p>
+				<h2 class="text-lg font-semibold text-gray-900">Horario de trabajo</h2>
+				<p class="text-gray-400 text-xs">Las franjas en las que se aceptan reservas.</p>
 			</div>
 		</div>
 		<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
 
 			<div>
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">➕ Añadir franja horaria</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Añadir franja horaria</h3>
 				<form method="POST" action="{{ path('admin_horario_nuevo') }}" class="flex flex-col gap-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div>
@@ -257,7 +270,7 @@
 			</div>
 
 			<div>
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">📋 Franjas activas</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Franjas activas</h3>
 				{% if horarios is empty %}
 					<div class="flex items-start gap-3 bg-red-50 border-2 border-red-200 rounded-xl p-5">
 						<span class="text-2xl">⚠️</span>
@@ -268,7 +281,6 @@
 						{% for horario in horarios %}
 							<li class="flex items-center justify-between bg-green-50 border border-green-100 rounded-xl px-5 py-4">
 								<div class="flex items-center gap-3">
-									<span class="text-xl">🟢</span>
 									<div>
 										<span class="font-extrabold text-gray-800 text-base">
 											{{ horario.horaApertura|date('H:i') }}
@@ -281,7 +293,7 @@
 									</div>
 								</div>
 								<a href="{{ path('admin_horario_eliminar', {'id': horario.id}) }}" onclick="return confirm('¿Eliminar esta franja horaria?')" class="bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl text-sm transition-colors">
-									🗑️ Eliminar
+									Eliminar
 								</a>
 							</li>
 						{% endfor %}
@@ -294,18 +306,15 @@
 	{# ===== 2. REGLAS RECURRENTES ===== #}
 	<div id="reglas" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
 		<div class="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50">
-			<span class="text-3xl">📋</span>
 			<div>
-				<h2 class="text-xl font-extrabold text-gray-900">Reglas de Horario</h2>
-				<p class="text-gray-400 text-sm mt-0.5">Días o franjas que
-					<strong>siempre</strong>
-					están cerrados. Ej: domingos, tardes de sábado.</p>
+				<h2 class="text-lg font-semibold text-gray-900">Reglas de horario</h2>
+				<p class="text-gray-400 text-xs">Días o franjas que siempre están cerrados.</p>
 			</div>
 		</div>
 		<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
 
 			<div>
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">➕ Añadir regla recurrente</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Añadir regla recurrente</h3>
 				<form method="POST" action="{{ path('admin_regla_horario_nueva') }}" class="flex flex-col gap-4">
 					<div>
 						<label class="block text-sm font-bold text-gray-600 mb-2">Día de la semana</label>
@@ -354,7 +363,7 @@
 
 			<div>
 				{% set dias = {0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado'} %}
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">📋 Reglas activas</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Reglas activas</h3>
 				{% if reglasHorario is empty %}
 					<p class="text-gray-400 text-base py-4">No hay reglas configuradas.</p>
 				{% else %}
@@ -362,7 +371,6 @@
 						{% for regla in reglasHorario %}
 							<li class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-5 py-4">
 								<div class="flex items-start gap-3">
-									<span class="text-xl mt-0.5">🔁</span>
 									<div>
 										<span class="font-extrabold text-gray-800 text-base">{{ dias[regla.diaSemana] }}</span>
 										{% if regla.horaDesde and regla.horaHasta %}
@@ -382,7 +390,7 @@
 									</div>
 								</div>
 								<a href="{{ path('admin_regla_horario_eliminar', {'id': regla.id}) }}" onclick="return confirm('¿Eliminar esta regla?')" class="bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl text-sm transition-colors shrink-0 ml-3">
-									🗑️ Eliminar
+									Eliminar
 								</a>
 							</li>
 						{% endfor %}
@@ -395,16 +403,15 @@
 	{# ===== 3. DÍAS BLOQUEADOS PUNTUALES ===== #}
 	<div id="bloqueados" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-10">
 		<div class="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50">
-			<span class="text-3xl">🚫</span>
 			<div>
-				<h2 class="text-xl font-extrabold text-gray-900">Días Bloqueados</h2>
-				<p class="text-gray-400 text-sm mt-0.5">Fechas concretas cerradas. Ej: festivos, vacaciones, enfermedad.</p>
+				<h2 class="text-lg font-semibold text-gray-900">Días bloqueados</h2>
+				<p class="text-gray-400 text-xs">Fechas concretas cerradas. Festivos, vacaciones, etc.</p>
 			</div>
 		</div>
 		<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
 
 			<div>
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">➕ Bloquear una fecha</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Bloquear una fecha</h3>
 				<form method="POST" action="{{ path('admin_dias_bloqueados') }}" class="flex flex-col gap-4">
 					<div>
 						<label class="block text-sm font-bold text-gray-600 mb-2">Fecha</label>
@@ -424,7 +431,7 @@
 			</div>
 
 			<div>
-				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">📋 Próximos días bloqueados</h3>
+				<h3 class="font-extrabold text-gray-700 text-base uppercase tracking-wide mb-5">Próximos días bloqueados</h3>
 				{% if diasBloqueados is empty %}
 					<p class="text-gray-400 text-base py-4">No hay días bloqueados.</p>
 				{% else %}
@@ -432,7 +439,6 @@
 						{% for dia in diasBloqueados %}
 							<li class="flex items-center justify-between bg-red-50 border border-red-100 rounded-xl px-5 py-4">
 								<div class="flex items-center gap-3">
-									<span class="text-xl">📵</span>
 									<div>
 										<span class="font-extrabold text-gray-800 text-base">{{ dia.fecha|date('d/m/Y') }}</span>
 										{% if dia.motivo %}
@@ -441,7 +447,7 @@
 									</div>
 								</div>
 								<a href="{{ path('admin_dias_bloqueados_eliminar', {'id': dia.id}) }}" onclick="return confirm('¿Eliminar este día bloqueado?')" class="bg-red-100 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl text-sm transition-colors shrink-0 ml-3">
-									🗑️ Eliminar
+									Eliminar
 								</a>
 							</li>
 						{% endfor %}
@@ -455,10 +461,9 @@
 	<div id="empleados" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
 		<div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
 			<div class="flex items-center gap-3">
-				<span class="text-2xl">👤</span>
 				<div>
-					<h2 class="text-xl font-extrabold text-gray-900">Equipo</h2>
-					<p class="text-gray-400 text-sm">Empleados que aparecen en el selector de reservas.</p>
+					<h2 class="text-lg font-semibold text-gray-900">Equipo</h2>
+					<p class="text-gray-400 text-xs">Empleados que aparecen en el selector de reservas.</p>
 				</div>
 			</div>
 			<a href="{{ path('app_admin_empleados') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
@@ -484,9 +489,9 @@
 							</div>
 						</div>
 						{% if 'ROLE_ADMIN' in emp.roles %}
-							<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">🛡️ Admin</span>
+							<span class="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-bold">Admin</span>
 						{% else %}
-							<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">✂️ Empleado</span>
+							<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Empleado</span>
 						{% endif %}
 					</li>
 				{% endfor %}
@@ -498,37 +503,50 @@
 	<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-10">
 		<div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50">
 			<div class="flex items-center gap-3">
-				<span class="text-2xl">🏪</span>
 				<div>
-					<h2 class="text-xl font-extrabold text-gray-900">Datos del Local</h2>
-					<p class="text-gray-400 text-sm">Información de contacto del negocio.</p>
+					<h2 class="text-lg font-semibold text-gray-900">Locales de Venus</h2>
+					<p class="text-gray-400 text-xs">Información de contacto de tus negocios.</p>
 				</div>
 			</div>
-			<a href="{{ path('app_admin_local_editar') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
-				✏️ Editar →
+			<a href="{{ path('app_admin_locales') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-5 rounded-xl transition-colors text-sm">
+				Gestionar Locales →
 			</a>
 		</div>
-		<div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-			<div>
-				<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nombre</p>
-				<p class="font-bold text-gray-900">{{ local.nombre }}</p>
-			</div>
-			<div>
-				<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dirección</p>
-				<p class="font-bold text-gray-900">{{ local.direccion }}, {{ local.ciudad }}</p>
-			</div>
-			<div>
-				<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Contacto</p>
-				<p class="font-bold text-gray-900">{{ local.telefono ?? '—' }}</p>
-				<p class="text-gray-500 text-sm">{{ local.email ?? '—' }}</p>
-			</div>
+		<div class="divide-y divide-gray-100">
+			{% for l in locales %}
+				<div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+					<div>
+						<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nombre</p>
+						<p class="font-bold text-gray-900 flex items-center gap-2">
+							{{ l.nombre }}
+							{% if l.activo %}
+								<span class="w-2 h-2 rounded-full bg-green-500" title="Activo"></span>
+							{% else %}
+								<span class="w-2 h-2 rounded-full bg-red-500" title="Inactivo"></span>
+							{% endif %}
+						</p>
+					</div>
+					<div>
+						<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dirección</p>
+						<p class=" text-gray-900">{{ l.direccion }},
+							{{ l.ciudad }}</p>
+					</div>
+					<div>
+						<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Contacto</p>
+						<p class=" text-gray-900">{{ l.telefono ?? '—' }}</p>
+						<p class="text-gray-500 text-sm">{{ l.email ?? '—' }}</p>
+					</div>
+				</div>
+			{% else %}
+				<div class="p-6 text-center text-gray-500">No tienes locales creados.</div>
+			{% endfor %}
 		</div>
 	</div>
 
 	<script>
 		document.getElementById('toggle-franja').addEventListener('change', function () {
-			document.getElementById('bloque-franja').classList.toggle('hidden', !this.checked);
-		});
+document.getElementById('bloque-franja').classList.toggle('hidden', !this.checked);
+});
 	</script>
 
 {% endblock %}

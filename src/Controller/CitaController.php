@@ -26,8 +26,21 @@ use Twig\Environment as TwigEnvironment;
 class CitaController extends AbstractController
 {
     #[Route('/reservar/{id}', name: 'app_reservar')]
-    public function reservar(
-        Servicio $servicio,
+    public function reservarPaso1(Servicio $servicio, EntityManagerInterface $em): Response
+    {
+        // Paso 1: Mostrar los locales activos
+        $locales = $em->getRepository(Local::class)->findBy(['activo' => true]);
+
+        return $this->render('cita/reservar_paso1.html.twig', [
+            'servicio' => $servicio,
+            'locales'  => $locales,
+        ]);
+    }
+
+    #[Route('/reservar/{servicioId}/{localId}', name: 'app_reservar_paso2')]
+    public function reservarPaso2(
+        int $servicioId,
+        int $localId,
         Request $request,
         EntityManagerInterface $em,
         CitaRepository $citaRepository,
@@ -37,23 +50,26 @@ class CitaController extends AbstractController
         MailerInterface $mailer,
         TwigEnvironment $twig
     ): Response {
-        $cita = new Cita();
-        $cita->setEstado('Pendiente');
+        $servicio = $em->getRepository(Servicio::class)->find($servicioId);
+        $local = $em->getRepository(Local::class)->find($localId);
 
-        $local = $em->getRepository(Local::class)->findOneBy([]);
-        if ($local) {
-            $cita->setLocal($local);
+        if (!$servicio || !$local) {
+            throw $this->createNotFoundException('Servicio o Local no encontrado.');
         }
 
-        // Punto 5: ya NO asignamos el empleado hardcodeado aquí.
-        // El formulario CitaType gestiona la selección (campo 'empleado' filtrado por rol).
+        $cita = new Cita();
+        $cita->setEstado('Pendiente');
+        $cita->setLocal($local);
 
-        $form = $this->createForm(CitaType::class, $cita);
+        // Pasamos el local como opción al formulario para filtrar los empleados
+        $form = $this->createForm(CitaType::class, $cita, [
+            'local' => $local,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // --- Punto 4: Validación server-side de solapamiento ---
+            // Validacion server-side de solapamiento
             $fechaInicio = $cita->getFechaInicio();
             $fechaFin = clone $fechaInicio;
             $fechaFin->modify('+' . $servicio->getDuration() . ' minutes');
@@ -63,11 +79,11 @@ class CitaController extends AbstractController
             if (count($solapadas) > 0) {
                 $this->addFlash(
                     'error',
-                    '⚠️ Lo sentimos, esa hora ya no está disponible. Por favor elige otra.'
+                    'Lo sentimos, esa hora ya no está disponible. Por favor elige otra.'
                 );
-                return $this->redirectToRoute('app_reservar', ['id' => $servicio->getId()]);
+                return $this->redirectToRoute('app_reservar_paso2', ['servicioId' => $servicio->getId(), 'localId' => $local->getId()]);
             }
-            // --- Fin validación server-side ---
+            // Fin validación server-side
 
             $cita->setUsuario($this->getUser());
             $cita->addServicio($servicio);
@@ -75,7 +91,7 @@ class CitaController extends AbstractController
             $em->persist($cita);
             $em->flush();
 
-            // --- Punto 2: Envío de email de confirmación ---
+            // Envío de email de confirmación
             try {
                 $htmlContent = $twig->render('emails/confirmacion_cita.html.twig', [
                     'cita'    => $cita,
@@ -91,9 +107,8 @@ class CitaController extends AbstractController
                 $mailer->send($email);
             } catch (TransportExceptionInterface $e) {
                 // El email falla silenciosamente: la reserva ya está guardada
-                // En producción se podría loguear: $this->logger->error(...)
             }
-            // --- Fin envío email ---
+            // Fin envío email
 
             return $this->redirectToRoute('app_cliente_perfil', ['cita_confirmada' => 'true']);
         }
@@ -108,7 +123,7 @@ class CitaController extends AbstractController
             ->getResult();
 
         // Generar slots dinámicamente desde los horarios del local
-        $horarios = $local ? $horarioRepo->findBy(['local' => $local]) : [];
+        $horarios = $horarioRepo->findBy(['local' => $local]);
 
         $slotsTotales = [];
         foreach ($horarios as $horario) {
@@ -138,19 +153,19 @@ class CitaController extends AbstractController
             }
         }
 
-        $localId = $local?->getId();
-        $diasBloqueados = $diasBloqueadosRepo->findFechasBloqueadasProximos(14, $localId);
+        $diasBloqueados = $diasBloqueadosRepo->findFechasBloqueadasProximos(14, $local->getId());
 
-        $reglas = $local ? array_map(function ($r) {
+        $reglas = array_map(function ($r) {
             return [
                 'dia'   => $r->getDiaSemana(),
                 'desde' => $r->getHoraDesde()?->format('H:i'),
                 'hasta' => $r->getHoraHasta()?->format('H:i'),
             ];
-        }, $reglasRepo->findBy(['local' => $local])) : [];
+        }, $reglasRepo->findBy(['local' => $local]));
 
         return $this->render('cita/reservar.html.twig', [
             'servicio'      => $servicio,
+            'local'         => $local,
             'form'          => $form->createView(),
             'horasOcupadas' => json_encode($horasOcupadas),
             'diasBloqueados' => json_encode($diasBloqueados),

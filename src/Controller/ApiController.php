@@ -5,6 +5,8 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Local;
+use App\Repository\UserRepository;
 
 class ApiController extends AbstractController
 {
@@ -31,5 +33,20 @@ class ApiController extends AbstractController
             'message' => '¡Misión cumplida! Productos obtenidos correctamente.',
             'data' => $productosFalsos
         ]);
+    }
+
+    #[Route('/api/empleados-por-local/{id}', name: 'api_empleados_local', methods: ['GET'])]
+    public function getEmpleadosPorLocal(Local $local, UserRepository $userRepository): JsonResponse
+    {
+        $empleados = $userRepository->findEmpleadosByLocal($local);
+        $data = [];
+        foreach ($empleados as $emp) {
+            $data[] = [
+                'id' => $emp->getId(),
+                'nombre' => $emp->getNombre()
+            ];
+        }
+
+        return $this->json($data);
     }
 }

@@ -50,4 +50,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Devuelve los empleados de un local concreto.
+     *
+     * @param \App\Entity\Local $local
+     * @return User[]
+     */
+    public function findEmpleadosByLocal(\App\Entity\Local $local): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where("u.roles LIKE :rolEmpleado OR u.roles LIKE :rolAdmin")
+            ->andWhere('u.local = :local')
+            ->setParameter('rolEmpleado', '%ROLE_EMPLEADO%')
+            ->setParameter('rolAdmin', '%ROLE_ADMIN%')
+            ->setParameter('local', $local)
+            ->orderBy('u.nombre', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

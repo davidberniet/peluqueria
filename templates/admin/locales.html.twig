@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Locales | Panel Admin | Venus{% endblock %}
+
+{% block body %}
+<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+        <h1 class="text-3xl font-extrabold text-gray-900">Locales</h1>
+        <p class="text-gray-500 mt-1">Gestiona los diferentes locales de Venus.</p>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <a href="{{ path('app_admin_dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors text-center">
+            &larr; Volver al Panel
+        </a>
+        <a href="{{ path('app_admin_local_nuevo') }}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors transform hover:-translate-y-0.5 text-center">
+            + Nuevo Local
+        </a>
+    </div>
+</div>
+
+{# FLASH MESSAGES #}
+{% for msg in app.flashes('success') %}
+    <div class="mb-6 bg-green-50 border border-green-200 text-green-700 font-semibold px-5 py-4 rounded-xl">{{ msg }}</div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+    <div class="mb-6 bg-red-50 border border-red-200 text-red-700 font-semibold px-5 py-4 rounded-xl">{{ msg }}</div>
+{% endfor %}
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    {% if locales is empty %}
+        <div class="p-10 text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">No hay locales</h2>
+            <p class="text-gray-500 mb-6">Aún no has añadido ningún local. ¡Empieza creando el primero!</p>
+            <a href="{{ path('app_admin_local_nuevo') }}" class="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-2.5 px-6 rounded-xl transition-colors">Crear primer local</a>
+        </div>
+    {% else %}
+        {# --- Desktop: tabla --- #}
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider">
+                        <th class="px-6 py-4 font-semibold">Local</th>
+                        <th class="px-6 py-4 font-semibold">Contacto</th>
+                        <th class="px-6 py-4 font-semibold text-center">Empleados</th>
+                        <th class="px-6 py-4 font-semibold text-center">Servicios</th>
+                        <th class="px-6 py-4 font-semibold text-center">Estado</th>
+                        <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for local in locales %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 font-bold shrink-0">
+                                        {{ local.nombre|slice(0,1)|upper }}
+                                    </div>
+                                    <div>
+                                        <p class="font-extrabold text-gray-900">{{ local.nombre }}</p>
+                                        <p class="text-sm text-gray-500">{{ local.direccion }}, {{ local.ciudad }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if local.telefono %}
+                                    <p class="text-sm font-semibold text-gray-900">{{ local.telefono }}</p>
+                                {% endif %}
+                                {% if local.email %}
+                                    <p class="text-xs text-gray-500 mt-1">{{ local.email }}</p>
+                                {% endif %}
+                                {% if not local.telefono and not local.email %}
+                                    <span class="text-gray-400 text-sm">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="bg-gray-100 text-gray-800 font-bold px-3 py-1 rounded-full text-sm">
+                                    {{ local.empleados|length }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="bg-gray-100 text-gray-800 font-bold px-3 py-1 rounded-full text-sm">
+                                    {{ local.servicios|length }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if local.activo %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Activo
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        Inactivo
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ path('app_admin_local_editar', {'id': local.id}) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl transition-colors text-sm">
+                                        Editar
+                                    </a>
+                                    {% if local.activo %}
+                                        <a href="{{ path('app_admin_local_eliminar', {'id': local.id}) }}" onclick="return confirm('¿Seguro que quieres desactivar este local? Los clientes no podrán reservar en él.')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-4 py-2 rounded-xl transition-colors text-sm">
+                                            Desactivar
+                                        </a>
+                                    {% else %}
+                                        <span class="px-4 py-2 text-xs text-gray-400 italic">Desactivado</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# --- Mobile: tarjetas --- #}
+        <div class="block lg:hidden divide-y divide-gray-100">
+            {% for local in locales %}
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 text-xl font-bold shrink-0">
+                                {{ local.nombre|slice(0,1)|upper }}
+                            </div>
+                            <div>
+                                <p class="font-extrabold text-gray-900 text-lg leading-tight">{{ local.nombre }}</p>
+                                <p class="text-sm text-gray-500 mt-0.5">{{ local.direccion }}, {{ local.ciudad }}</p>
+                            </div>
+                        </div>
+                        <div>
+                            {% if local.activo %}
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Activo
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Inactivo
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 bg-gray-50 p-3 rounded-lg">
+                        {% if local.telefono %}
+                            <p class="text-sm font-semibold text-gray-900">{{ local.telefono }}</p>
+                        {% endif %}
+                        {% if local.email %}
+                            <p class="text-xs text-gray-500 mt-1">{{ local.email }}</p>
+                        {% endif %}
+                        {% if not local.telefono and not local.email %}
+                            <span class="text-gray-400 text-sm italic">Sin datos de contacto</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex gap-3 mb-4">
+                        <div class="bg-gray-50 p-2 rounded-lg text-center flex-1 border border-gray-100">
+                            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Empleados</span>
+                            <span class="font-extrabold text-gray-900 text-lg">{{ local.empleados|length }}</span>
+                        </div>
+                        <div class="bg-gray-50 p-2 rounded-lg text-center flex-1 border border-gray-100">
+                            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Servicios</span>
+                            <span class="font-extrabold text-gray-900 text-lg">{{ local.servicios|length }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <a href="{{ path('app_admin_local_editar', {'id': local.id}) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
+                            Editar
+                        </a>
+                        {% if local.activo %}
+                            <a href="{{ path('app_admin_local_eliminar', {'id': local.id}) }}" onclick="return confirm('¿Seguro que quieres desactivar este local?')" class="flex-1 text-center bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold py-2.5 rounded-xl border border-red-200 text-sm transition-colors">
+                                Desactivar
+                            </a>
+                        {% else %}
+                            <div class="flex-1 text-center py-2.5 text-xs font-bold text-gray-400 italic">Desactivado</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

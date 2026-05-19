@@ -10,13 +10,17 @@
 
 {% if servicios is empty %}
     <div class="bg-white rounded-3xl p-10 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
-        <div class="text-5xl mb-4">💇‍♀️</div>
+        <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
+            </svg>
+        </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Próximamente...</h2>
-        <p class="text-gray-500">Estamos preparando nuestro catálogo de servicios. ¡Vuelve pronto!</p>
+        <p class="text-gray-500">Estamos preparando nuestro catálogo de servicios. Vuelve pronto.</p>
         
         {% if is_granted('ROLE_ADMIN') %}
             <div class="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                <p class="text-sm text-yellow-800 font-bold">👋 Hola Jefe: Tienes que entrar en tu base de datos y añadir servicios (asegúrate de poner 'activo' en 1) para que salgan aquí.</p>
+                <p class="text-sm text-yellow-800 font-bold">Aviso: Tienes que entrar en tu base de datos y añadir servicios (asegúrate de poner 'activo' en 1) para que salgan aquí.</p>
             </div>
         {% endif %}
     </div>
@@ -50,7 +54,7 @@
                     
                     <a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="mt-6 block w-full text-center bg-gray-900 hover:bg-pink-500 text-white font-bold py-3.5 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
                         Reservar
-                    </a>    
+                    </a>
                 </div>
             </div>
         {% endfor %}

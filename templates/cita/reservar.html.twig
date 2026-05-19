@@ -12,9 +12,9 @@
 
 			<div class="p-6 border-b border-gray-100 flex justify-between items-center relative">
 				<h2 class="text-xl font-bold text-gray-900 w-full text-center">Elige el día de tu cita</h2>
-				<a href="{{ path('app_servicios') }}" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 transition-colors">
+				<a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 transition-colors">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
 					</svg>
 				</a>
 			</div>
@@ -50,8 +50,8 @@
 						{{ servicio.nombre }}
 						<span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">TOP</span>
 					</h3>
-					<p class="text-gray-500 text-sm mt-3 flex items-center justify-between">
-						<span>Empleado: Cualquiera</span>
+					<p class="text-gray-500 text-sm mt-1">
+						📍 {{ local.nombre }}
 					</p>
 				</div>
 				<div class="text-right ml-4">
@@ -75,7 +75,6 @@
 			{# Campos ocultos gestionados por el JS del calendario #}
 			<div class="hidden">
 				{{ form_widget(form.fechaInicio) }}
-				{{ form_widget(form.local) }}
 				{{ form_widget(form.notas) }}
 			</div>
 

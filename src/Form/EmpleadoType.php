@@ -57,6 +57,16 @@ class EmpleadoType extends AbstractType
                     'size'  => 2,
                 ],
             ])
+            ->add('local', \Symfony\Bridge\Doctrine\Form\Type\EntityType::class, [
+                'class'        => \App\Entity\Local::class,
+                'choice_label' => 'nombre',
+                'label'        => 'Local asignado',
+                'required'     => false,
+                'placeholder'  => 'Ningún local (Sede central / No asignado)',
+                'attr'         => [
+                    'class' => 'w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-pink-400',
+                ],
+            ])
         ;
     }
 

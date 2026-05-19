@@ -9,62 +9,115 @@
         <p class="text-gray-500 mt-1">Añade o modifica los productos de tu tienda.</p>
     </div>
     
-    <div class="flex gap-3">
-        <a href="{{ path('app_admin_dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors">
+    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <a href="{{ path('app_admin_dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-colors text-center">
             &larr; Volver al Panel
         </a>
-        <a href="{{ path('app_admin_producto_nuevo') }}" class="bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors transform hover:-translate-y-0.5">
+        <a href="{{ path('app_admin_producto_nuevo') }}" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors transform hover:-translate-y-0.5 text-center">
             + Nuevo Producto
         </a>
     </div>
 </div>
 
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <table class="w-full text-left border-collapse">
-        <thead>
-            <tr class="text-gray-400 text-xs uppercase bg-gray-50 border-b border-gray-100">
-                <th class="px-6 py-4 font-semibold w-24">Imagen</th>
-                <th class="px-6 py-4 font-semibold">Producto y Marca</th>
-                <th class="px-6 py-4 font-semibold">Precio</th>
-                <th class="px-6 py-4 font-semibold">Local</th>
-                <th class="px-6 py-4 font-semibold text-right">Acciones</th>
-            </tr>
-        </thead>
-        <tbody class="text-sm text-gray-700">
+    {% if productos is empty %}
+        <div class="p-12 text-center text-gray-500">
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="font-bold text-lg text-gray-900 mb-1">No hay productos todavía</p>
+            <p>Añade el primero para empezar a vender.</p>
+        </div>
+    {% else %}
+        {# --- Desktop: tabla --- #}
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-gray-400 text-xs uppercase bg-gray-50 border-b border-gray-100">
+                        <th class="px-6 py-4 font-semibold w-24">Imagen</th>
+                        <th class="px-6 py-4 font-semibold">Producto y Marca</th>
+                        <th class="px-6 py-4 font-semibold">Precio</th>
+                        <th class="px-6 py-4 font-semibold">Local</th>
+                        <th class="px-6 py-4 font-semibold text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+                    {% for producto in productos %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                {% if producto.imagen %}
+                                    <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="Foto" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm">
+                                {% else %}
+                                    <div class="w-12 h-12 rounded-lg bg-pink-50 text-pink-500 flex items-center justify-center border border-pink-100">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                                        </svg>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-bold text-gray-900 block text-base">{{ producto.nombre }}</span>
+                                <span class="text-xs font-bold text-pink-600 uppercase tracking-wider">{{ producto.marca }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-extrabold text-gray-900 text-lg">{{ producto.precio|number_format(2, ',', '.') }}€</span>
+                            </td>
+                            <td class="px-6 py-4 font-medium text-gray-500">
+                                {{ producto.local.nombre }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ path('app_admin_producto_editar', {'id': producto.id}) }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm transition-colors">Editar</a>
+                                    <a href="{{ path('app_admin_producto_eliminar', {'id': producto.id}) }}" onclick="return confirm('¿Seguro que quieres borrar este producto para siempre?')" class="bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold px-4 py-2 rounded-xl border border-red-200 text-sm transition-colors">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# --- Mobile: tarjetas --- #}
+        <div class="block md:hidden divide-y divide-gray-100">
             {% for producto in productos %}
-                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
-                    <td class="px-6 py-4">
+                <div class="p-5">
+                    <div class="flex items-center gap-4 mb-4">
                         {% if producto.imagen %}
-                            <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="Foto" class="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm">
+                            <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="Foto" class="w-16 h-16 rounded-xl object-cover border border-gray-200 shadow-sm shrink-0">
                         {% else %}
-                            <div class="w-12 h-12 rounded-lg bg-pink-50 text-pink-300 flex items-center justify-center text-xl border border-pink-100">🧴</div>
+                            <div class="w-16 h-16 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center border border-pink-100 shrink-0">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                                </svg>
+                            </div>
                         {% endif %}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="font-bold text-gray-900 block text-base">{{ producto.nombre }}</span>
-                        <span class="text-xs font-bold text-pink-600 uppercase tracking-wider">{{ producto.marca }}</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="font-extrabold text-gray-900 text-lg">{{ producto.precio|number_format(2, ',', '.') }}€</span>
-                    </td>
-                    <td class="px-6 py-4 font-medium text-gray-500">
-                        {{ producto.local.nombre }}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="{{ path('app_admin_producto_editar', {'id': producto.id}) }}" class="text-blue-500 hover:text-blue-700 font-bold mr-3 transition-colors">Editar</a>
-                        <a href="{{ path('app_admin_producto_eliminar', {'id': producto.id}) }}" onclick="return confirm('¿Seguro que quieres borrar este producto para siempre?')" class="text-red-500 hover:text-red-700 font-bold transition-colors">Eliminar</a>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                        <div class="text-4xl mb-3">🛍️</div>
-                        <p class="font-bold text-lg text-gray-900">No hay productos todavía</p>
-                        <p>Añade el primero para empezar a vender.</p>
-                    </td>
-                </tr>
+                        <div class="min-w-0 flex-1">
+                            <span class="font-bold text-gray-900 block text-lg leading-tight truncate">{{ producto.nombre }}</span>
+                            <span class="text-xs font-bold text-pink-600 uppercase tracking-wider block mt-0.5">{{ producto.marca }}</span>
+                            <span class="block font-extrabold text-gray-900 text-xl mt-1">{{ producto.precio|number_format(2, ',', '.') }}€</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Local</span>
+                        <span class="font-medium text-gray-700 text-sm">{{ producto.local.nombre }}</span>
+                    </div>
+                    
+                    <div class="flex gap-2 mt-3">
+                        <a href="{{ path('app_admin_producto_editar', {'id': producto.id}) }}" class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
+                            Editar
+                        </a>
+                        <a href="{{ path('app_admin_producto_eliminar', {'id': producto.id}) }}" onclick="return confirm('¿Seguro que quieres borrar este producto?')" class="flex-1 text-center bg-red-50 hover:bg-red-500 hover:text-white text-red-600 font-bold py-2.5 rounded-xl border border-red-200 text-sm transition-colors">
+                            Eliminar
+                        </a>
+                    </div>
+                </div>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -59,7 +59,7 @@ class EnviarRecordatoriosCitasCommand extends Command
                 ]);
 
                 $email = (new Email())
-                    ->from('venus.peluqueria@ejemplo.com') // ← cambia esto
+                    ->from('venus.peluqueria@ejemplo.com') 
                     ->to($cita->getUsuario()->getEmail())
                     ->subject('✂️ Recordatorio: tu cita en Venus es mañana')
                     ->html($html);

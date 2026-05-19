@@ -17,17 +17,13 @@ class CitaType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $local = $options['local'];
+
         $builder
             ->add('fechaInicio', DateTimeType::class, [
                 'widget' => 'single_text',
                 'label'  => 'Día y Hora de la cita',
                 'attr'   => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none'],
-            ])
-            ->add('local', EntityType::class, [
-                'class'        => Local::class,
-                'choice_label' => 'nombre',
-                'label'        => '¿En qué local?',
-                'attr'         => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none'],
             ])
             ->add('empleado', EntityType::class, [
                 'class'         => User::class,
@@ -35,13 +31,19 @@ class CitaType extends AbstractType
                 'label'         => '¿Con quién te apetece?',
                 'required'      => false,
                 'placeholder'   => 'Sin preferencia (cualquiera)',
-                // Filtramos solo usuarios con rol de empleado o admin
-                'query_builder' => function (UserRepository $repo) {
-                    return $repo->createQueryBuilder('u')
-                        ->where("u.roles LIKE :rolEmpleado OR u.roles LIKE :rolAdmin")
-                        ->setParameter('rolEmpleado', '%ROLE_EMPLEADO%')
-                        ->setParameter('rolAdmin', '%ROLE_ADMIN%')
-                        ->orderBy('u.nombre', 'ASC');
+                // Filtramos solo usuarios con rol de empleado o admin y del local elegido
+                'query_builder' => function (UserRepository $repo) use ($local) {
+                    $qb = $repo->createQueryBuilder('u')
+                        ->where("u.roles LIKE :rolEmpleado OR u.roles LIKE :rolAdmin");
+                    
+                    if ($local) {
+                        $qb->andWhere('u.local = :local')
+                           ->setParameter('local', $local);
+                    }
+
+                    return $qb->setParameter('rolEmpleado', '%ROLE_EMPLEADO%')
+                              ->setParameter('rolAdmin', '%ROLE_ADMIN%')
+                              ->orderBy('u.nombre', 'ASC');
                 },
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none'],
             ])
@@ -57,6 +59,7 @@ class CitaType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Cita::class,
+            'local'      => null,
         ]);
     }
 }
