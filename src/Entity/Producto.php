@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProductoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -29,9 +31,16 @@ class Producto
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagen = null;
 
-    #[ORM\ManyToOne(inversedBy: 'productos')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Local $local = null;
+    /**
+     * @var Collection<int, Local>
+     */
+    #[ORM\ManyToMany(targetEntity: Local::class, inversedBy: 'productos')]
+    private Collection $locales;
+
+    public function __construct()
+    {
+        $this->locales = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -101,14 +110,26 @@ class Producto
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
     private ?int $stock = 0;
 
-    public function getLocal(): ?Local
+    /**
+     * @return Collection<int, Local>
+     */
+    public function getLocales(): Collection
     {
-        return $this->local;
+        return $this->locales;
     }
 
-    public function setLocal(?Local $local): static
+    public function addLocale(Local $locale): static
     {
-        $this->local = $local;
+        if (!$this->locales->contains($locale)) {
+            $this->locales->add($locale);
+        }
+
+        return $this;
+    }
+
+    public function removeLocale(Local $locale): static
+    {
+        $this->locales->removeElement($locale);
 
         return $this;
     }

@@ -32,16 +32,21 @@ class ProductoType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none', 'rows' => 4]
             ])
-            ->add('precio', MoneyType::class, [
+            ->add('precio', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Precio (€)',
-                'currency' => 'EUR',
-                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
+                'scale' => 2,
+                'attr' => [
+                    'class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none',
+                    'step' => '0.01'
+                ]
             ])
-            ->add('local', EntityType::class, [
+            ->add('locales', EntityType::class, [
                 'class' => Local::class,
                 'choice_label' => 'nombre',
-                'label' => '¿En qué local se vende?',
-                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
+                'label' => '¿En qué locales se vende?',
+                'multiple' => true,
+                'expanded' => true,
+                'attr' => ['class' => 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 p-4 bg-gray-50 rounded-xl border border-gray-200']
             ])
             ->add('stock', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
                 'label' => 'Unidades en Stock',

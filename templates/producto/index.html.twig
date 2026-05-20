@@ -3,65 +3,178 @@
 {% block title %}Nuestros Productos | Venus{% endblock %}
 
 {% block body %}
-<div class="text-center mb-12">
-    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">Productos Exclusivos</h1>
-    <p class="text-lg text-gray-500 max-w-2xl mx-auto">Cuida tu cabello y tu piel en casa con los mismos productos profesionales que usamos en el salón.</p>
+
+{# ===== CABECERA ===== #}
+<div class="relative text-center mb-14 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-pink-100 rounded-full opacity-50 blur-3xl -z-10"></div>
+    </div>
+    <span class="inline-block text-pink-500 font-bold tracking-widest uppercase text-xs mb-4 bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full">
+        Tienda profesional
+    </span>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Productos Exclusivos</h1>
+    <p class="text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+        Cuida tu cabello en casa con los mismos productos profesionales que usamos en el salón.
+    </p>
 </div>
 
+{# ===== EMPTY STATE ===== #}
 {% if productos is empty %}
-    <div class="bg-white rounded-3xl p-10 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
-        <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+    <div class="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
+        <div class="w-20 h-20 bg-pink-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-pink-100">
+            <svg class="w-10 h-10 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
             </svg>
         </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Tienda en preparación</h2>
-        <p class="text-gray-500">Estamos llenando las estanterías con los mejores productos. Vuelve pronto.</p>
+        <p class="text-gray-400">Estamos llenando las estanterías con los mejores productos. Vuelve pronto.</p>
     </div>
+
+{# ===== GRID DE PRODUCTOS ===== #}
 {% else %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for producto in productos %}
-            <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 flex flex-col h-full group">
-                
-                <div class="h-64 bg-white flex items-center justify-center relative overflow-hidden p-6">
-                    {% if producto.imagen %}
-                        <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}" alt="{{ producto.nombre }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
-                    {% else %}
-                        <div class="w-20 h-20 bg-pink-100 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                            <svg class="w-10 h-10 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-                            </svg>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="absolute top-4 right-4 bg-pink-100 text-pink-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm z-10">
-                        {{ producto.marca }}
-                    </div>
-                </div>
-                
-                <div class="p-8 flex-grow flex flex-col">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ producto.nombre }}</h3>
-                    <p class="text-gray-500 mb-6 flex-grow text-sm line-clamp-3">{{ producto.descripcion|default('Añade este producto a tu próxima cita y llévatelo a casa tras tu tratamiento en el salón.') }}</p>
-                    
-                    <div class="flex flex-col sm:flex-row items-center justify-between mt-auto pt-6 border-t border-gray-50 gap-4">
-                        <div class="w-full sm:w-auto text-center sm:text-left">
-                            <p class="text-3xl font-extrabold text-gray-900">{{ producto.precio|number_format(2, ',', '.') }}€</p>
-                        </div>
-                        
-                        {% if app.user %}
-                            <a href="{{ path('app_producto_add_cita', {'id': producto.id}) }}" class="w-full sm:w-auto text-center bg-gray-900 hover:bg-pink-600 text-white font-bold py-2.5 px-5 rounded-xl transition-colors shadow-md">
-                                Añadir a mi cita
-                            </a>
-                        {% else %}
-                            <a href="{{ path('app_login') }}" class="w-full sm:w-auto text-center bg-pink-50 text-pink-700 hover:bg-pink-100 font-bold py-2.5 px-5 rounded-xl transition-colors text-sm border border-pink-100">
-                                Comprar
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-                
-            </div>
+
+    {# Filtro por marca #}
+    {% set marcas = [] %}
+    {% for p in productos %}
+        {% if p.marca is defined and p.marca and p.marca not in marcas %}
+            {% set marcas = marcas|merge([p.marca]) %}
+        {% endif %}
+    {% endfor %}
+
+    {% if marcas|length > 1 %}
+    <div class="flex flex-wrap justify-center gap-2 mb-10">
+        <button data-marca="todos" onclick="filtrarMarca(this)"
+            class="marca-btn activo px-5 py-2 rounded-full text-sm font-bold border-2 border-gray-900 bg-gray-900 text-white transition-all duration-200">
+            Todas las marcas
+        </button>
+        {% for marca in marcas %}
+        <button data-marca="{{ marca|lower|replace({' ': '-'}) }}" onclick="filtrarMarca(this)"
+            class="marca-btn px-5 py-2 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-pink-400 hover:text-pink-600 transition-all duration-200">
+            {{ marca }}
+        </button>
         {% endfor %}
     </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-productos">
+        {% for producto in productos %}
+        <div class="producto-card bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden group"
+             data-marca="{{ producto.marca is defined and producto.marca ? producto.marca|lower|replace({' ': '-'}) : '' }}">
+
+            {# Zona imagen #}
+            <div class="relative h-56 bg-gradient-to-br from-gray-50 to-pink-50 flex items-center justify-center overflow-hidden p-6">
+
+                {% if producto.imagen %}
+                    <img src="{{ asset('uploads/productos/' ~ producto.imagen) }}"
+                         alt="{{ producto.nombre }}"
+                         class="max-h-44 w-auto object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md">
+                {% else %}
+                    <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-sm border border-pink-100 group-hover:scale-110 transition-transform duration-500">
+                        <svg class="w-12 h-12 text-pink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                        </svg>
+                    </div>
+                {% endif %}
+
+                {# Badge marca #}
+                {% if producto.marca is defined and producto.marca %}
+                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
+                    {{ producto.marca }}
+                </div>
+                {% endif %}
+
+                {# Badge stock / destacado opcional #}
+                {% if producto.stock is defined and producto.stock == 0 %}
+                <div class="absolute top-3 right-3 bg-gray-800 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                    Agotado
+                </div>
+                {% endif %}
+            </div>
+
+            {# Info #}
+            <div class="p-6 flex flex-col flex-grow">
+
+                <h3 class="text-lg font-extrabold text-gray-900 mb-1.5 group-hover:text-pink-600 transition-colors duration-200 leading-snug">
+                    {{ producto.nombre }}
+                </h3>
+
+                <p class="text-sm text-gray-400 leading-relaxed mb-5 flex-grow line-clamp-3">
+                    {{ producto.descripcion|default('Añade este producto a tu próxima cita y llévatelo a casa tras tu tratamiento en el salón.') }}
+                </p>
+
+                {# Precio + CTA #}
+                <div class="pt-5 border-t border-gray-50">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-0.5">Precio</p>
+                            <p class="text-2xl font-extrabold text-gray-900 leading-none">
+                                {{ producto.precio|number_format(2, ',', '.') }}<span class="text-base font-bold text-pink-500">€</span>
+                            </p>
+                        </div>
+                        {# Icono producto premium decorativo #}
+                        <div class="w-10 h-10 rounded-xl bg-pink-50 flex items-center justify-center border border-pink-100">
+                            <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {% if app.user %}
+                        {% if producto.stock is defined and producto.stock == 0 %}
+                            <button disabled class="w-full text-center bg-gray-100 text-gray-400 font-bold py-3 rounded-xl cursor-not-allowed text-sm">
+                                Sin stock
+                            </button>
+                        {% else %}
+                            <a href="{{ path('app_producto_add_cita', {'id': producto.id}) }}"
+                               class="flex items-center justify-center gap-2 w-full text-center bg-gray-900 hover:bg-pink-600 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-pink-500/25 transition-all duration-300 group/btn text-sm">
+                                <svg class="w-4 h-4 opacity-60 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Añadir a mi cita
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ path('app_login') }}"
+                           class="flex items-center justify-center gap-2 w-full text-center bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold py-3 rounded-xl transition-all duration-200 text-sm border border-pink-100 hover:border-pink-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                            </svg>
+                            Inicia sesión para comprar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="no-resultados-marca" class="hidden text-center py-16">
+        <p class="text-gray-400 font-medium">No hay productos de esta marca todavía.</p>
+    </div>
+
 {% endif %}
+
+<script>
+function filtrarMarca(btn) {
+    const marca = btn.dataset.marca;
+
+    document.querySelectorAll('.marca-btn').forEach(b => {
+        b.classList.remove('activo', 'border-gray-900', 'bg-gray-900', 'text-white');
+        b.classList.add('border-gray-200', 'text-gray-600', 'bg-white');
+    });
+    btn.classList.add('activo', 'border-gray-900', 'bg-gray-900', 'text-white');
+    btn.classList.remove('border-gray-200', 'text-gray-600', 'bg-white');
+
+    const cards = document.querySelectorAll('.producto-card');
+    let visibles = 0;
+    cards.forEach(card => {
+        const mostrar = marca === 'todos' || card.dataset.marca === marca;
+        card.style.display = mostrar ? '' : 'none';
+        if (mostrar) visibles++;
+    });
+
+    document.getElementById('no-resultados-marca').classList.toggle('hidden', visibles > 0);
+}
+</script>
+
 {% endblock %}

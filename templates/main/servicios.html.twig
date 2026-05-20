@@ -3,61 +3,156 @@
 {% block title %}Catálogo de Servicios | Venus{% endblock %}
 
 {% block body %}
-<div class="text-center mb-12">
-    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">Nuestros Servicios</h1>
-    <p class="text-lg text-gray-500 max-w-2xl mx-auto">Descubre todo lo que podemos hacer por ti con las mejores técnicas y productos de primera.</p>
+
+{# ===== CABECERA ===== #}
+<div class="relative text-center mb-14 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-pink-100 rounded-full opacity-50 blur-3xl -z-10"></div>
+    </div>
+    <span class="inline-block text-pink-500 font-bold tracking-widest uppercase text-xs mb-4 bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full">
+        Catálogo completo
+    </span>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Nuestros Servicios</h1>
+    <p class="text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+        Descubre todo lo que podemos hacer por ti con las mejores técnicas y productos de primera.
+    </p>
 </div>
 
+{# ===== EMPTY STATE ===== #}
 {% if servicios is empty %}
-    <div class="bg-white rounded-3xl p-10 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
-        <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
+    <div class="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
+        <div class="w-20 h-20 bg-pink-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-pink-100">
+            <svg class="w-10 h-10 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
             </svg>
         </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-2">Próximamente...</h2>
-        <p class="text-gray-500">Estamos preparando nuestro catálogo de servicios. Vuelve pronto.</p>
-        
+        <p class="text-gray-400 mb-2">Estamos preparando nuestro catálogo de servicios. Vuelve pronto.</p>
         {% if is_granted('ROLE_ADMIN') %}
-            <div class="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                <p class="text-sm text-yellow-800 font-bold">Aviso: Tienes que entrar en tu base de datos y añadir servicios (asegúrate de poner 'activo' en 1) para que salgan aquí.</p>
+            <div class="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-200">
+                <p class="text-sm text-amber-800 font-semibold">⚠ Añade servicios en la base de datos con <code class="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-xs">activo = 1</code> para que aparezcan aquí.</p>
             </div>
         {% endif %}
     </div>
-{% else %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for servicio in servicios %}
-            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden group flex flex-col h-full">
-                
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-50 rounded-full group-hover:bg-pink-100 transition-colors z-0"></div>
-                
-                <div class="relative z-10 flex-grow flex flex-col">
-                    
-                    <div class="mb-4">
-                        <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider text-pink-700 bg-pink-100 rounded-full shadow-sm">
-                            {{ servicio.categoria }}
-                        </span>
-                    </div>
 
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ servicio.nombre }}</h3>
-                    
-                    <div class="flex items-end justify-between mt-auto pt-6 border-t border-gray-50">
-                        <div>
-                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Precio</p>
-                            <p class="text-3xl font-extrabold text-gray-900">{{ servicio.precio }}€</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Tiempo</p>
+{# ===== GRID DE SERVICIOS ===== #}
+{% else %}
+    {# Agrupamos por categoría para poder usarlo en el filtro visual #}
+    {% set categorias = [] %}
+    {% for s in servicios %}
+        {% if s.categoria not in categorias %}
+            {% set categorias = categorias|merge([s.categoria]) %}
+        {% endif %}
+    {% endfor %}
+
+    {# Filtro por categoría #}
+    {% if categorias|length > 1 %}
+    <div class="flex flex-wrap justify-center gap-2 mb-10" id="filtros">
+        <button
+            data-cat="todos"
+            onclick="filtrar(this)"
+            class="filtro-btn activo px-5 py-2 rounded-full text-sm font-bold border-2 transition-all duration-200 border-gray-900 bg-gray-900 text-white">
+            Todos
+        </button>
+        {% for cat in categorias %}
+        <button
+            data-cat="{{ cat|lower|replace({' ': '-'}) }}"
+            onclick="filtrar(this)"
+            class="filtro-btn px-5 py-2 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-pink-400 hover:text-pink-600 transition-all duration-200">
+            {{ cat }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-servicios">
+        {% for servicio in servicios %}
+        <div
+            class="servicio-card bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden group"
+            data-cat="{{ servicio.categoria|lower|replace({' ': '-'}) }}">
+
+            {# Franja de color superior #}
+            <div class="h-1.5 w-full bg-gradient-to-r from-pink-400 to-pink-600"></div>
+
+            <div class="p-7 flex flex-col flex-grow">
+
+                {# Badge categoría #}
+                <div class="mb-5">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider text-pink-700 bg-pink-50 border border-pink-100 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 inline-block"></span>
+                        {{ servicio.categoria }}
+                    </span>
+                </div>
+
+                {# Nombre + descripción (si existe) #}
+                <h3 class="text-xl font-extrabold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors duration-200">
+                    {{ servicio.nombre }}
+                </h3>
+                {% if servicio.descripcion is defined and servicio.descripcion %}
+                    <p class="text-sm text-gray-400 leading-relaxed mb-4">{{ servicio.descripcion }}</p>
+                {% endif %}
+
+                {# Precio + duración #}
+                <div class="mt-auto pt-5 border-t border-gray-50 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-0.5">Precio</p>
+                        <p class="text-3xl font-extrabold text-gray-900 leading-none">
+                            {{ servicio.precio }}<span class="text-lg font-bold text-pink-500">€</span>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-0.5">Duración</p>
+                        <div class="flex items-center justify-end gap-1.5">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
                             <p class="text-lg font-bold text-gray-700">{{ servicio.duration }} min</p>
                         </div>
                     </div>
-                    
-                    <a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="mt-6 block w-full text-center bg-gray-900 hover:bg-pink-500 text-white font-bold py-3.5 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
-                        Reservar
-                    </a>
                 </div>
+
+                {# CTA #}
+                <a href="{{ path('app_reservar', {'id': servicio.id}) }}"
+                   class="mt-5 flex items-center justify-center gap-2 w-full text-center bg-gray-900 hover:bg-pink-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:shadow-pink-500/25 transition-all duration-300 group/btn">
+                    <svg class="w-4 h-4 opacity-70 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Reservar cita
+                </a>
             </div>
+        </div>
         {% endfor %}
     </div>
+
+    {# Mensaje si el filtro no encuentra nada #}
+    <div id="no-resultados" class="hidden text-center py-16">
+        <p class="text-gray-400 font-medium">No hay servicios en esta categoría todavía.</p>
+    </div>
 {% endif %}
+
+<script>
+function filtrar(btn) {
+    const cat = btn.dataset.cat;
+
+    // Estilo botones
+    document.querySelectorAll('.filtro-btn').forEach(b => {
+        b.classList.remove('activo', 'border-gray-900', 'bg-gray-900', 'text-white');
+        b.classList.add('border-gray-200', 'text-gray-600', 'bg-white');
+    });
+    btn.classList.add('activo', 'border-gray-900', 'bg-gray-900', 'text-white');
+    btn.classList.remove('border-gray-200', 'text-gray-600', 'bg-white');
+
+    // Filtrar tarjetas
+    const cards = document.querySelectorAll('.servicio-card');
+    let visibles = 0;
+    cards.forEach(card => {
+        const mostrar = cat === 'todos' || card.dataset.cat === cat;
+        card.style.display = mostrar ? '' : 'none';
+        if (mostrar) visibles++;
+    });
+
+    document.getElementById('no-resultados').classList.toggle('hidden', visibles > 0);
+}
+</script>
+
 {% endblock %}

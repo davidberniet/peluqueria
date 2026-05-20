@@ -53,12 +53,6 @@
 				</div>
 			</div>
 			<div class="p-6">
-				{% for msg in app.flashes('success_perfil') %}
-					<div class="mb-4 bg-green-50 border border-green-200 text-green-700 text-base font-semibold px-4 py-3 rounded-xl">
-						✅
-						{{ msg }}
-					</div>
-				{% endfor %}
 
 				{{ form_start(formPerfil, {'attr': {'class': 'flex flex-col gap-5'}}) }}
 
@@ -108,18 +102,6 @@
 				</div>
 			</div>
 			<div class="p-6">
-				{% for msg in app.flashes('success_password') %}
-					<div class="mb-4 bg-green-50 border border-green-200 text-green-700 text-base font-semibold px-4 py-3 rounded-xl">
-						✅
-						{{ msg }}
-					</div>
-				{% endfor %}
-				{% for msg in app.flashes('error_password') %}
-					<div class="mb-4 bg-red-50 border border-red-200 text-red-700 text-base font-semibold px-4 py-3 rounded-xl">
-						❌
-						{{ msg }}
-					</div>
-				{% endfor %}
 
 				{{ form_start(formPassword, {'attr': {'class': 'flex flex-col gap-5'}}) }}
 

@@ -48,7 +48,7 @@ class Local
     /**
      * @var Collection<int, Producto>
      */
-    #[ORM\OneToMany(targetEntity: Producto::class, mappedBy: 'local')]
+    #[ORM\ManyToMany(targetEntity: Producto::class, mappedBy: 'locales')]
     private Collection $productos;
 
     /**
@@ -228,7 +228,7 @@ class Local
     {
         if (!$this->productos->contains($producto)) {
             $this->productos->add($producto);
-            $producto->setLocal($this);
+            $producto->addLocale($this);
         }
 
         return $this;
@@ -237,10 +237,7 @@ class Local
     public function removeProducto(Producto $producto): static
     {
         if ($this->productos->removeElement($producto)) {
-            // set the owning side to null (unless already changed)
-            if ($producto->getLocal() === $this) {
-                $producto->setLocal(null);
-            }
+            $producto->removeLocale($this);
         }
 
         return $this;

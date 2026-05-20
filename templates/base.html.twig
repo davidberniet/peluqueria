@@ -113,6 +113,145 @@
 			</div>
 		</nav>
 
+		{# ===== SISTEMA GLOBAL DE NOTIFICACIONES (FLASH MESSAGES) ===== #}
+		{% set all_flashes = {
+			'success':        app.flashes('success'),
+			'error':          app.flashes('error'),
+			'success_perfil': app.flashes('success_perfil'),
+			'error_perfil':   app.flashes('error_perfil'),
+			'success_password': app.flashes('success_password'),
+			'error_password': app.flashes('error_password')
+		} %}
+
+		{% set has_flashes = (
+			all_flashes.success|length > 0 or
+			all_flashes.error|length > 0 or
+			all_flashes.success_perfil|length > 0 or
+			all_flashes.error_perfil|length > 0 or
+			all_flashes.success_password|length > 0 or
+			all_flashes.error_password|length > 0
+		) %}
+
+		{% if has_flashes %}
+		<div id="toast-container" class="fixed top-20 right-4 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+
+			{% for msg in all_flashes.success %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-green-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="success">
+				<div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">¡Éxito!</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+			{% for msg in all_flashes.success_perfil %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-green-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="success">
+				<div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">¡Éxito!</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+			{% for msg in all_flashes.success_password %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-green-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="success">
+				<div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">¡Éxito!</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+			{% for msg in all_flashes.error %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-red-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="error">
+				<div class="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-0.5">Atención</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+			{% for msg in all_flashes.error_perfil %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-red-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="error">
+				<div class="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-0.5">Atención</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+			{% for msg in all_flashes.error_password %}
+			<div class="toast-item pointer-events-auto flex items-start gap-3 bg-white border border-red-100 rounded-2xl shadow-xl px-4 py-3.5 opacity-0 translate-x-8 transition-all duration-500" data-type="error">
+				<div class="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+					<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+					</svg>
+				</div>
+				<div class="flex-1 min-w-0">
+					<p class="text-xs font-bold text-red-500 uppercase tracking-wider mb-0.5">Atención</p>
+					<p class="text-sm font-medium text-gray-800 leading-snug">{{ msg }}</p>
+				</div>
+				<button onclick="cerrarToast(this.parentElement)" class="text-gray-300 hover:text-gray-500 transition-colors mt-0.5 shrink-0">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+					</svg>
+				</button>
+			</div>
+			{% endfor %}
+
+		</div>
+		{% endif %}
+
 		<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
 			{% block body %}{% endblock %}
 		</main>
@@ -135,7 +274,33 @@
 					iconMenu.classList.toggle('hidden');
 					iconClose.classList.toggle('hidden');
 				});
+
+				// ===== TOAST NOTIFICATIONS =====
+				const toasts = document.querySelectorAll('.toast-item');
+				toasts.forEach(function (toast, index) {
+					// Slide-in con retardo escalonado
+					setTimeout(function () {
+						toast.classList.remove('opacity-0', 'translate-x-8');
+					}, 100 + index * 120);
+
+					// Auto-cerrar a los 4.5 segundos
+					setTimeout(function () {
+						cerrarToast(toast);
+					}, 4500 + index * 120);
+				});
 			});
+
+			function cerrarToast(el) {
+				el.classList.add('opacity-0', 'translate-x-8');
+				setTimeout(function () {
+					el.remove();
+					// Si no quedan toasts, eliminar el contenedor
+					const container = document.getElementById('toast-container');
+					if (container && container.querySelectorAll('.toast-item').length === 0) {
+						container.remove();
+					}
+				}, 500);
+			}
 		</script>
 	</body>
 </html>

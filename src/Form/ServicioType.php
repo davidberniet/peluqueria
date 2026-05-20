@@ -24,19 +24,30 @@ class ServicioType extends AbstractType
                 'label' => 'Categoría (Ej: Peluquería, Estética)',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
             ])
-            ->add('precio', MoneyType::class, [
+            ->add('precio', \Symfony\Component\Form\Extension\Core\Type\NumberType::class, [
                 'label' => 'Precio (€)',
-                'currency' => 'EUR',
-                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
+                'scale' => 2,
+                'attr' => [
+                    'class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none',
+                    'step' => '0.01'
+                ]
             ])
             ->add('duration', IntegerType::class, [
                 'label' => 'Duración (en minutos)',
                 'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none']
             ])
+            ->add('local', \Symfony\Bridge\Doctrine\Form\Type\EntityType::class, [
+                'class' => \App\Entity\Local::class,
+                'choice_label' => 'nombre',
+                'label' => 'Local (Opcional)',
+                'placeholder' => 'Disponible en todos los locales',
+                'required' => false,
+                'attr' => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none bg-white']
+            ])
             ->add('activo', CheckboxType::class, [
                 'label' => '¿Visible para los clientes?',
                 'required' => false,
-                'attr' => ['class' => 'w-5 h-5 text-pink-600 rounded focus:ring-pink-500']
+                'attr' => ['class' => 'w-5 h-5 text-pink-600 rounded focus:ring-pink-500 cursor-pointer']
             ])
         ;
     }
