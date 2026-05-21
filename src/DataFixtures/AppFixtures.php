@@ -98,7 +98,8 @@ class AppFixtures extends Fixture
             $producto->setDescripcion($datos[2]);
             $producto->setPrecio($datos[3]);
             $producto->setImagen($datos[4]);
-            $producto->setLocal($datos[5]);
+            $producto->addLocale($datos[5]); // ManyToMany → addLocale(), no setLocal()
+            $producto->setStock(10);
             $manager->persist($producto);
         }
 

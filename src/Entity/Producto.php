@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductoRepository::class)]
 class Producto
@@ -17,15 +18,21 @@ class Producto
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre del producto no puede estar vacío.')]
+    #[Assert\Length(max: 255, maxMessage: 'El nombre no puede superar {{ limit }} caracteres.')]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La marca no puede estar vacía.')]
+    #[Assert\Length(max: 255, maxMessage: 'La marca no puede superar {{ limit }} caracteres.')]
     private ?string $marca = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descripcion = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'El precio es obligatorio.')]
+    #[Assert\Positive(message: 'El precio debe ser un valor positivo.')]
     private ?float $precio = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -108,6 +115,7 @@ class Producto
     }
 
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]
+    #[Assert\PositiveOrZero(message: 'El stock no puede ser negativo.')]
     private ?int $stock = 0;
 
     /**

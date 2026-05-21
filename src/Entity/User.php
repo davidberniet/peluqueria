@@ -10,6 +10,7 @@ use Scheb\TwoFactorBundle\Model\Email\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -22,6 +23,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank(message: 'El email no puede estar vacío.')]
+    #[Assert\Email(message: 'El email "{{ value }}" no es válido.')]
+    #[Assert\Length(max: 180, maxMessage: 'El email no puede superar {{ limit }} caracteres.')]
     private ?string $email = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -40,9 +44,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre no puede estar vacío.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'El nombre debe tener al menos {{ limit }} caracteres.',
+        maxMessage: 'El nombre no puede superar {{ limit }} caracteres.'
+    )]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Length(max: 20, maxMessage: 'El teléfono no puede superar {{ limit }} caracteres.')]
+    #[Assert\Regex(
+        pattern: '/^[\+]?[0-9\s\-\.\(\)]{6,20}$/',
+        message: 'El teléfono no tiene un formato válido.'
+    )]
     private ?string $telefono = null;
 
     /**

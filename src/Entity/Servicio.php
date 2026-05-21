@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ServicioRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ServicioRepository::class)]
 class Servicio
@@ -14,15 +15,23 @@ class Servicio
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre del servicio no puede estar vacío.')]
+    #[Assert\Length(max: 255, maxMessage: 'El nombre no puede superar {{ limit }} caracteres.')]
     private ?string $nombre = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La duración es obligatoria.')]
+    #[Assert\Positive(message: 'La duración debe ser un valor positivo (en minutos).')]
     private ?int $duration = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'El precio es obligatorio.')]
+    #[Assert\Positive(message: 'El precio debe ser un valor positivo.')]
     private ?float $precio = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'La categoría no puede estar vacía.')]
+    #[Assert\Length(max: 100, maxMessage: 'La categoría no puede superar {{ limit }} caracteres.')]
     private ?string $categoria = null;
 
     #[ORM\Column]

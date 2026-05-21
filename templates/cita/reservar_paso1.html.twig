@@ -11,7 +11,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {% for local in locales %}
-            <a href="{{ path('app_reservar_paso2', {'servicioId': servicio.id, 'localId': local.id}) }}"
+            <a href="{{ path('app_seleccionar_servicios', {'localId': local.id, 'servicioId': servicio.id}) }}"
                class="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-pink-300 transition-all duration-300 transform hover:-translate-y-1 group">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center shrink-0 group-hover:bg-pink-600 transition-colors">

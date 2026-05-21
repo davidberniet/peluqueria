@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Elige tus servicios | {{ local.nombre }} | Venus{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto my-10 px-4">
+
+    {# Cabecera #}
+    <div class="text-center mb-8">
+        <span class="inline-block text-pink-500 font-bold tracking-widest uppercase text-xs mb-3 bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full">
+            📍 {{ local.nombre }}
+        </span>
+        <h2 class="text-3xl font-extrabold text-gray-900 mb-2">¿Qué te apetece hoy?</h2>
+        <p class="text-gray-400">Selecciona uno o varios servicios. Calcularemos el tiempo y precio totales.</p>
+    </div>
+
+    <form id="form-servicios"
+          action="{{ path('app_reservar_paso2', {'servicioId': servicios[0].id ?? 0, 'localId': local.id}) }}"
+          method="GET">
+
+        {# Hidden input que el JS rellenará con los IDs seleccionados #}
+        <input type="hidden" name="servicioIds" id="input-servicios-ids">
+
+        <div class="space-y-3 mb-8" id="lista-servicios">
+            {% for servicio in servicios %}
+            <label
+                class="servicio-item flex items-center gap-4 p-5 bg-white rounded-2xl border-2 border-gray-100 cursor-pointer hover:border-pink-400 transition-all duration-200 group"
+                data-precio="{{ servicio.precio }}"
+                data-duracion="{{ servicio.duration }}"
+                data-id="{{ servicio.id }}">
+
+                <input
+                    type="checkbox"
+                    class="checkbox-servicio sr-only"
+                    value="{{ servicio.id }}"
+                    {% if servicio.id == preseleccionado %}checked{% endif %}>
+
+                {# Indicador visual de selección #}
+                <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center flex-shrink-0 check-indicator group-hover:border-pink-400 transition-colors">
+                    <svg class="w-3.5 h-3.5 text-white hidden check-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-bold text-gray-900 group-hover:text-pink-600 transition-colors">{{ servicio.nombre }}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 border border-pink-100 px-2 py-0.5 rounded-full">{{ servicio.categoria }}</span>
+                    </div>
+                    <p class="text-sm text-gray-400 flex items-center gap-3">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ servicio.duration }} min
+                        </span>
+                    </p>
+                </div>
+
+                <div class="text-right flex-shrink-0">
+                    <p class="text-xl font-extrabold text-gray-900">{{ servicio.precio|number_format(2, ',', '.') }}€</p>
+                </div>
+            </label>
+            {% else %}
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-6 rounded-2xl text-center">
+                <p class="font-bold">No hay servicios disponibles en este local.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Resumen total (aparece cuando hay algo seleccionado) #}
+        <div id="resumen-total" class="hidden bg-gray-900 text-white rounded-2xl p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-bold text-sm uppercase tracking-wider text-gray-400">Resumen de tu cita</span>
+                <span id="contador-servicios" class="text-xs font-bold bg-pink-600 px-2.5 py-1 rounded-full">0 servicios</span>
+            </div>
+            <div id="lista-resumen" class="space-y-1.5 mb-4 text-sm text-gray-300"></div>
+            <div class="border-t border-gray-700 pt-3 flex items-center justify-between">
+                <div class="flex items-center gap-4 text-sm text-gray-300">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span id="duracion-total">0 min</span>
+                    </span>
+                </div>
+                <p class="text-2xl font-extrabold"><span id="precio-total">0,00</span>€</p>
+            </div>
+        </div>
+
+        {# Botón continuar #}
+        <button type="submit" id="btn-continuar"
+            class="w-full bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-all text-lg"
+            disabled>
+            Elegir fecha y hora →
+        </button>
+    </form>
+
+    <div class="mt-6 text-center">
+        <a href="{{ path('app_servicios') }}" class="text-gray-400 hover:text-gray-600 font-semibold transition-colors text-sm">← Cambiar local</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const items     = document.querySelectorAll('.servicio-item');
+    const inputIds  = document.getElementById('input-servicios-ids');
+    const resumen   = document.getElementById('resumen-total');
+    const btnCont   = document.getElementById('btn-continuar');
+    const form      = document.getElementById('form-servicios');
+
+    // Inicializar con el preseleccionado si existe
+    items.forEach(item => {
+        const cb = item.querySelector('.checkbox-servicio');
+        if (cb.checked) actualizarEstiloItem(item, true);
+    });
+
+    actualizarResumen();
+
+    items.forEach(item => {
+        item.addEventListener('click', function (e) {
+            if (e.target.type === 'checkbox') return; // evitar doble disparo
+            const cb = item.querySelector('.checkbox-servicio');
+            cb.checked = !cb.checked;
+            actualizarEstiloItem(item, cb.checked);
+            actualizarResumen();
+        });
+    });
+
+    function actualizarEstiloItem(item, seleccionado) {
+        const indicator = item.querySelector('.check-indicator');
+        const icon      = item.querySelector('.check-icon');
+
+        if (seleccionado) {
+            item.classList.add('border-pink-500', 'bg-pink-50');
+            item.classList.remove('border-gray-100', 'bg-white');
+            indicator.classList.add('bg-pink-600', 'border-pink-600');
+            indicator.classList.remove('border-gray-200');
+            icon.classList.remove('hidden');
+        } else {
+            item.classList.remove('border-pink-500', 'bg-pink-50');
+            item.classList.add('border-gray-100', 'bg-white');
+            indicator.classList.remove('bg-pink-600', 'border-pink-600');
+            indicator.classList.add('border-gray-200');
+            icon.classList.add('hidden');
+        }
+    }
+
+    function actualizarResumen() {
+        const seleccionados = [...document.querySelectorAll('.checkbox-servicio:checked')];
+        const ids       = seleccionados.map(cb => cb.value);
+        let duracion    = 0;
+        let precio      = 0;
+        const listaHTML = [];
+
+        seleccionados.forEach(cb => {
+            const item = cb.closest('.servicio-item');
+            duracion  += parseFloat(item.dataset.duracion);
+            precio    += parseFloat(item.dataset.precio);
+            const nombre  = item.querySelector('.font-bold.text-gray-900').textContent.trim();
+            const precioS = parseFloat(item.dataset.precio).toFixed(2).replace('.', ',');
+            listaHTML.push(`<div class="flex justify-between"><span>${nombre}</span><span class="font-bold text-white">${precioS}€</span></div>`);
+        });
+
+        // Actualizar input oculto
+        inputIds.value = ids.join(',');
+
+        // Actualizar resumen visual
+        document.getElementById('lista-resumen').innerHTML = listaHTML.join('');
+        document.getElementById('duracion-total').textContent = duracion + ' min';
+        document.getElementById('precio-total').textContent = precio.toFixed(2).replace('.', ',');
+        document.getElementById('contador-servicios').textContent = ids.length + (ids.length === 1 ? ' servicio' : ' servicios');
+
+        if (ids.length > 0) {
+            resumen.classList.remove('hidden');
+            // Actualizar la action del formulario con el primer servicio seleccionado
+            const primerIdInt = parseInt(ids[0]);
+            const localId = {{ local.id }};
+            form.action = `/reservar/${primerIdInt}/${localId}`;
+
+            btnCont.disabled = false;
+            btnCont.className = 'w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-all text-lg cursor-pointer';
+        } else {
+            resumen.classList.add('hidden');
+            btnCont.disabled = true;
+            btnCont.className = 'w-full bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-all text-lg';
+        }
+    }
+});
+</script>
+{% endblock %}

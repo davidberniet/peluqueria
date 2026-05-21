@@ -45,19 +45,30 @@
 
 		<div class="p-6 bg-white">
 			<div class="flex justify-between items-start border-b border-gray-100 pb-6">
-				<div>
-					<h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm flex items-center gap-2">
-						{{ servicio.nombre }}
-						<span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">TOP</span>
+				<div class="flex-1">
+					<h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm flex items-center gap-2 mb-3">
+						Resumen de tu cita
+						<span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">📍 {{ local.nombre }}</span>
 					</h3>
-					<p class="text-gray-500 text-sm mt-1">
-						📍 {{ local.nombre }}
-					</p>
+					{# Lista de servicios seleccionados #}
+					<ul class="space-y-1.5">
+						{% for s in serviciosSeleccionados %}
+						<li class="flex items-center justify-between text-sm">
+							<span class="flex items-center gap-2 text-gray-700">
+								<span class="w-1.5 h-1.5 bg-pink-500 rounded-full inline-block"></span>
+								{{ s.nombre }}
+								<span class="text-xs text-gray-400">({{ s.duration }} min)</span>
+							</span>
+							<span class="font-bold text-gray-700 ml-4">{{ s.precio|number_format(2, ',', '.') }}€</span>
+						</li>
+						{% endfor %}
+					</ul>
 				</div>
-				<div class="text-right ml-4">
-					<p class="font-bold text-gray-900">{{ servicio.precio|number_format(2, ',', '.') }}
-						€</p>
+				<div class="text-right ml-6 flex-shrink-0">
+					<p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Total</p>
+					<p class="font-bold text-gray-900 text-2xl">{{ precioTotal|number_format(2, ',', '.') }}€</p>
 					<p class="text-gray-400 text-xs mt-1" id="resumen-hora">Selecciona hora</p>
+					<p class="text-gray-400 text-xs">⏱ {{ duracionTotal }} min</p>
 				</div>
 			</div>
 		</div>
@@ -66,9 +77,23 @@
 
 			{{ form_start(form, {'attr': {'class': 'flex flex-col gap-6', 'id': 'form-reserva'}}) }}
 
+			{# Renderizar errores globales del formulario #}
+			{% if not form.vars.valid %}
+				<div class="bg-red-50 text-red-600 p-4 rounded-xl mb-4 border border-red-200">
+					{{ form_errors(form) }}
+					<ul>
+					{% for child in form %}
+						{% for error in child.vars.errors %}
+							<li><strong>{{ child.vars.label|default(child.vars.name) }}:</strong> {{ error.message }}</li>
+						{% endfor %}
+					{% endfor %}
+					</ul>
+				</div>
+			{% endif %}
+
 			{# Campos ocultos gestionados por el JS del calendario #}
 			<div class="hidden">
-				{{ form_widget(form.fechaInicio) }}
+				<input type="hidden" id="cita_fechaInicio" name="cita[fechaInicio]" value="">
 				{{ form_widget(form.notas) }}
 			</div>
 
@@ -82,11 +107,10 @@
 			<div class="flex flex-col md:flex-row justify-between items-center gap-4">
 				<div class="w-full md:w-auto text-right md:text-left flex flex-col items-end md:items-start flex-grow pr-4">
 					<p class="text-gray-500 text-sm">Total :
-						<span class="text-3xl font-extrabold text-gray-900 ml-2">{{ servicio.precio|number_format(2, ',', '.') }}
+						<span class="text-3xl font-extrabold text-gray-900 ml-2">{{ precioTotal|number_format(2, ',', '.') }}
 							€</span>
 					</p>
-					<p class="text-gray-400 text-xs mt-1">{{ servicio.duration|default(30) }}
-						min</p>
+					<p class="text-gray-400 text-xs mt-1">{{ duracionTotal }} min</p>
 				</div>
 				<button type="button" id="btn-submit-fake" class="w-full md:w-1/2 bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-colors text-lg">
 					Elige Fecha y Hora

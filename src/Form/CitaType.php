@@ -8,7 +8,6 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,11 +19,6 @@ class CitaType extends AbstractType
         $local = $options['local'];
 
         $builder
-            ->add('fechaInicio', DateTimeType::class, [
-                'widget' => 'single_text',
-                'label'  => 'Día y Hora de la cita',
-                'attr'   => ['class' => 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-500 outline-none'],
-            ])
             ->add('empleado', EntityType::class, [
                 'class'         => User::class,
                 'choice_label'  => 'nombre',
@@ -60,6 +54,11 @@ class CitaType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Cita::class,
             'local'      => null,
+            // El campo fechaInicio lo envía el calendario JS como input oculto
+            // (cita[fechaInicio]) y lo parsea el controlador a mano, así que no
+            // está declarado en el formulario. Toleramos ese campo extra para que
+            // la validación no falle con "This form should not contain extra fields".
+            'allow_extra_fields' => true,
         ]);
     }
 }

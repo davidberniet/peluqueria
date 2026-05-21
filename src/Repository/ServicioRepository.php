@@ -31,13 +31,16 @@ class ServicioRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?Servicio
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return Servicio[]
+     */
+    public function findActivosPorLocal(\App\Entity\Local $local): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.activo = true')
+            ->andWhere('s.local = :local OR s.local IS NULL')
+            ->setParameter('local', $local)
+            ->getQuery()
+            ->getResult();
+    }
 }

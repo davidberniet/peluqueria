@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CitaRepository::class)]
 class Cita
@@ -17,12 +18,22 @@ class Cita
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La fecha de inicio es obligatoria.')]
+    #[Assert\Type(\DateTime::class)]
     private ?\DateTime $fechaInicio = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La fecha de fin es obligatoria.')]
+    #[Assert\Type(\DateTime::class)]
+    #[Assert\GreaterThan(propertyPath: 'fechaInicio', message: 'La fecha de fin debe ser posterior a la fecha de inicio.')]
     private ?\DateTime $fechaFin = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'El estado de la cita es obligatorio.')]
+    #[Assert\Choice(
+        choices: ['Pendiente', 'Confirmada', 'Cancelada', 'Completada'],
+        message: 'El estado debe ser uno de: Pendiente, Confirmada, Cancelada, Completada.'
+    )]
     private ?string $estado = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

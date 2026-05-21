@@ -5,6 +5,19 @@
 
 {% block body %}
 
+	{# iOS/Safari renderiza los <input type="time"> con appearance nativo que ignora el ancho
+	   y los colapsa. Reseteamos el appearance, fijamos altura y alineamos el valor a la izquierda. #}
+	<style>
+		input[type="time"] {
+			-webkit-appearance: none;
+			appearance: none;
+			min-height: 52px;
+		}
+		input[type="time"]::-webkit-date-and-time-value {
+			text-align: left;
+		}
+	</style>
+
 	{# ===== CABECERA ===== #}
 	<div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
