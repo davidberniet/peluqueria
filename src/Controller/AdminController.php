@@ -41,11 +41,7 @@ class AdminController extends AbstractController
     #[Route('/dashboard', name: 'app_admin_dashboard')]
     public function dashboard(
         CitaRepository $citaRepository,
-        UserRepository $userRepository,
-        DiaBloqueadoRepository $diasBloqueadosRepo,
-        ReglaHorarioRepository $reglaHorarioRepo,
-        HorarioRepository $horarioRepo,
-        EntityManagerInterface $em
+        UserRepository $userRepository
     ): Response {
         $citasTotal = $citaRepository->findBy([], ['fechaInicio' => 'ASC']);
 
@@ -67,22 +63,24 @@ class AdminController extends AbstractController
         $usuarios      = $userRepository->findAll();
         $totalClientes = count($usuarios) > 0 ? count($usuarios) - 1 : 0;
 
-        $diasBloqueados = $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']);
-
-        $locales = $em->getRepository(Local::class)->findAll();
-
-        $empleados = $userRepository->findEmpleados();
-
         return $this->render('admin/index.html.twig', [
             'citas'          => $citasTotal,
             'citas_hoy'      => $citasHoyCount,
             'ingresos_hoy'   => $ingresosHoy,
             'total_clientes' => $totalClientes,
-            'diasBloqueados' => $diasBloqueados,
+        ]);
+    }
+
+    #[Route('/configuracion', name: 'app_admin_configuracion')]
+    public function configuracion(
+        DiaBloqueadoRepository $diasBloqueadosRepo,
+        ReglaHorarioRepository $reglaHorarioRepo,
+        HorarioRepository $horarioRepo
+    ): Response {
+        return $this->render('admin/configuracion.html.twig', [
+            'diasBloqueados' => $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']),
             'reglasHorario'  => $reglaHorarioRepo->findAll(),
             'horarios'       => $horarioRepo->findAll(),
-            'empleados'      => $empleados,
-            'locales'        => $locales,
         ]);
     }
 
@@ -110,7 +108,7 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'Día bloqueado correctamente.');
         }
 
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#bloqueados');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     // Eliminar un día bloqueado
@@ -122,7 +120,7 @@ class AdminController extends AbstractController
 
         $this->addFlash('success', 'Día desbloqueado correctamente.');
 
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#bloqueados');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     #[Route('/reglas-horario/nueva', name: 'admin_regla_horario_nueva', methods: ['POST'])]
@@ -149,7 +147,7 @@ class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Regla añadida correctamente.');
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     #[Route('/reglas-horario/{id}/eliminar', name: 'admin_regla_horario_eliminar')]
@@ -159,7 +157,7 @@ class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Regla eliminada correctamente.');
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     // --- VER TODAS LAS CITAS (HISTORIAL COMPLETO) ---
@@ -370,7 +368,7 @@ class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Franja horaria añadida.');
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     #[Route('/horarios/{id}/eliminar', name: 'admin_horario_eliminar')]
@@ -380,7 +378,7 @@ class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Franja horaria eliminada.');
-        return $this->redirectToRoute('app_admin_dashboard', [], 301, '#horario');
+        return $this->redirectToRoute('app_admin_configuracion');
     }
 
     #[Route('/cliente/{id}', name: 'app_admin_cliente_ficha')]

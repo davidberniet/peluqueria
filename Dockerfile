@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
@@ -35,7 +35,7 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # Instalar dependencias PHP (sin scripts para no fallar sin el código completo)
-RUN composer install --no-scripts --no-autoloader --prefer-dist --no-interaction
+RUN composer install --no-scripts --no-autoloader --prefer-dist --no-interaction --ignore-platform-reqs
 
 # Copiar el resto del proyecto
 COPY . .

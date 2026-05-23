@@ -1,8 +1,8 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}{{ editando ? 'Editar' : 'Nuevo' }} Servicio | Admin Venus{% endblock %}
 
-{% block body %}
+{% block admin_content %}
 <div class="max-w-2xl mx-auto my-10">
     <div class="mb-8">
         <a href="{{ path('app_admin_servicios') }}" class="text-pink-600 font-bold hover:underline mb-4 inline-block">&larr; Volver al catálogo</a>
