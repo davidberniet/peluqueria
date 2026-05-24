@@ -247,7 +247,7 @@ class CitaController extends AbstractController
             $slotsTotales
         );
 
-        $diasBloqueados = $diasBloqueadosRepo->findFechasBloqueadasProximos(14, $local->getId());
+        $diasBloqueados = $diasBloqueadosRepo->findFechasBloqueadasProximos(90, $local->getId());
 
         $reglas = array_map(function ($r) {
             return [

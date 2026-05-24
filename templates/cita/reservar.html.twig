@@ -1,272 +1,390 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservar
-	{{ servicio.nombre }}
-	| Venus
-{% endblock %}
+{% block title %}Reservar {{ servicio.nombre }} | Venus{% endblock %}
 
 {% block body %}
-	<div class="max-w-3xl mx-auto my-10">
+<div class="max-w-5xl mx-auto px-4 py-8">
 
-		<div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden relative">
-
-			<div class="p-6 border-b border-gray-100 flex justify-between items-center relative">
-				<h2 class="text-xl font-bold text-gray-900 w-full text-center">Elige el día de tu cita</h2>
-				<a href="{{ path('app_reservar', {'id': servicio.id}) }}" class="absolute right-6 top-6 text-gray-400 hover:text-red-500 transition-colors">
-					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-					</svg>
-				</a>
-			</div>
-
-			<div class="flex overflow-x-auto gap-3 py-2 px-1 w-full justify-start">
-				{% set start_date = date('now', 'Europe/Madrid') %}
-				{% for i in 0..14 %}
-					{% set current_date = start_date|date_modify('+' ~ i ~ ' days') %}
-					<div class="day-pill min-w-[75px] p-2 border border-gray-200 text-gray-800 rounded-xl text-center cursor-pointer hover:border-pink-600 hover:text-pink-600 transition-all shrink-0" data-date="{{ current_date|date('Y-m-d') }}">
-						<span class="block text-xs font-medium mb-1">
-							{{ current_date|date('D')|replace({'Mon':'Lun','Tue':'Mar','Wed':'Mié','Thu':'Jue','Fri':'Vie','Sat':'Sáb','Sun':'Dom'}) }}
-						</span>
-						<span class="block text-2xl font-extrabold">{{ current_date|date('d') }}</span>
-						<span class="block text-[10px] font-bold text-gray-400 mt-0.5 uppercase">
-							{{ current_date|date('M')|replace({'Jan':'Ene','Apr':'Abr','May':'May','Jun':'Jun','Jul':'Jul','Aug':'Ago','Sep':'Sep','Oct':'Oct','Nov':'Nov','Dec':'Dic'}) }}
-						</span>
-						<div class="h-1 w-4 bg-gray-200 mx-auto rounded mt-1 line-indicator"></div>
-					</div>
-				{% endfor %}
-			</div>
-		</div>
-
-		<div class="flex items-center justify-between p-4 bg-white border-b border-gray-100 bg-gray-50 min-h-[80px]">
-			<div id="contenedor-horas" class="flex overflow-x-auto gap-2 py-2 w-full justify-start md:justify-center">
-				<p class="text-gray-500 py-2 font-medium text-sm">Selecciona un día arriba para ver las horas disponibles</p>
-			</div>
-		</div>
-
-		<div class="p-6 bg-white">
-			<div class="flex justify-between items-start border-b border-gray-100 pb-6">
-				<div class="flex-1">
-					<h3 class="font-bold text-gray-900 uppercase tracking-wide text-sm flex items-center gap-2 mb-3">
-						Resumen de tu cita
-						<span class="text-[10px] bg-pink-600 text-white px-1.5 py-0.5 rounded">📍 {{ local.nombre }}</span>
-					</h3>
-					{# Lista de servicios seleccionados #}
-					<ul class="space-y-1.5">
-						{% for s in serviciosSeleccionados %}
-						<li class="flex items-center justify-between text-sm">
-							<span class="flex items-center gap-2 text-gray-700">
-								<span class="w-1.5 h-1.5 bg-pink-500 rounded-full inline-block"></span>
-								{{ s.nombre }}
-								<span class="text-xs text-gray-400">({{ s.duration }} min)</span>
-							</span>
-							<span class="font-bold text-gray-700 ml-4">{{ s.precio|number_format(2, ',', '.') }}€</span>
-						</li>
-						{% endfor %}
-					</ul>
-				</div>
-				<div class="text-right ml-6 flex-shrink-0">
-					<p class="text-xs text-gray-400 uppercase tracking-widest mb-1">Total</p>
-					<p class="font-bold text-gray-900 text-2xl">{{ precioTotal|number_format(2, ',', '.') }}€</p>
-					<p class="text-gray-400 text-xs mt-1" id="resumen-hora">Selecciona hora</p>
-					<p class="text-gray-400 text-xs">⏱ {{ duracionTotal }} min</p>
-				</div>
-			</div>
-		</div>
-
-		<div class="bg-white border-t border-gray-100 p-6">
-
-			{{ form_start(form, {'attr': {'class': 'flex flex-col gap-6', 'id': 'form-reserva'}}) }}
-
-			{# Renderizar errores globales del formulario #}
-			{% if not form.vars.valid %}
-				<div class="bg-red-50 text-red-600 p-4 rounded-xl mb-4 border border-red-200">
-					{{ form_errors(form) }}
-					<ul>
-					{% for child in form %}
-						{% for error in child.vars.errors %}
-							<li><strong>{{ child.vars.label|default(child.vars.name) }}:</strong> {{ error.message }}</li>
-						{% endfor %}
-					{% endfor %}
-					</ul>
-				</div>
-			{% endif %}
-
-			{# Campos ocultos gestionados por el JS del calendario #}
-			<div class="hidden">
-				<input type="hidden" id="cita_fechaInicio" name="cita[fechaInicio]" value="">
-				{{ form_widget(form.notas) }}
-			</div>
-
-			{# Selector de empleado — visible para el usuario #}
-			<div class="flex flex-col gap-2">
-				<label class="text-sm font-bold text-gray-600">👤 ¿Con quién te apetece?</label>
-				{{ form_widget(form.empleado) }}
-				<p class="text-xs text-gray-400">Puedes dejar «Sin preferencia» y te asignaremos al primer disponible.</p>
-			</div>
-
-			<div class="flex flex-col md:flex-row justify-between items-center gap-4">
-				<div class="w-full md:w-auto text-right md:text-left flex flex-col items-end md:items-start flex-grow pr-4">
-					<p class="text-gray-500 text-sm">Total :
-						<span class="text-3xl font-extrabold text-gray-900 ml-2">{{ precioTotal|number_format(2, ',', '.') }}
-							€</span>
-					</p>
-					<p class="text-gray-400 text-xs mt-1">{{ duracionTotal }} min</p>
-				</div>
-				<button type="button" id="btn-submit-fake" class="w-full md:w-1/2 bg-gray-300 text-gray-500 font-bold py-4 px-8 rounded-xl cursor-not-allowed transition-colors text-lg">
-					Elige Fecha y Hora
-				</button>
-				<button type="submit" id="btn-submit-real" class="hidden w-full md:w-1/2 bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-colors text-lg">
-					Confirmar Reserva
-				</button>
-			</div>
-
-			{{ form_end(form) }}
+	{# ===== CABECERA ===== #}
+	<div class="flex items-center gap-4 mb-8">
+		<a href="{{ path('app_reservar', {'id': servicio.id}) }}"
+		   class="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-pink-600 hover:border-pink-300 transition-colors shadow-sm shrink-0">
+			<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+			</svg>
+		</a>
+		<div>
+			<h1 class="text-2xl font-extrabold text-gray-900 leading-tight">Elige fecha y hora</h1>
+			<p class="text-gray-400 text-sm mt-0.5">{{ local.nombre }}</p>
 		</div>
 	</div>
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
+	{# Flash de error (solapamiento de cita) #}
+	{% for msg in app.flashes('error') %}
+		<div class="mb-6 bg-red-50 border border-red-200 text-red-700 font-semibold px-5 py-4 rounded-xl text-sm">
+			{{ msg }}
+		</div>
+	{% endfor %}
+
+	{# ===== LAYOUT DOS COLUMNAS ===== #}
+	<div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+
+		{# ─── COLUMNA IZQUIERDA ─── #}
+		<div class="flex flex-col gap-5">
+
+			{# Calendario #}
+			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+
+				{# Navegación de mes #}
+				<div class="flex items-center justify-between mb-5">
+					<button id="prev-mes" type="button" disabled
+							class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-300 cursor-not-allowed transition-colors">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+						</svg>
+					</button>
+					<h2 id="mes-label" class="font-extrabold text-gray-900 text-lg tracking-wide"></h2>
+					<button id="next-mes" type="button"
+							class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-600 hover:bg-pink-50 hover:text-pink-600 transition-colors">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+						</svg>
+					</button>
+				</div>
+
+				{# Cabeceras día de la semana #}
+				<div class="grid grid-cols-7 mb-2">
+					{% for d in ['L','M','X','J','V','S','D'] %}
+						<div class="text-center text-xs font-bold text-gray-400 py-1.5">{{ d }}</div>
+					{% endfor %}
+				</div>
+
+				{# Cuadrícula de días (JS) #}
+				<div id="grid-dias" class="grid grid-cols-7 gap-1 sm:gap-1.5"></div>
+
+				{# Leyenda #}
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-5 text-xs text-gray-400">
+					<span class="flex items-center gap-1.5">
+						<span class="w-2.5 h-2.5 rounded-full ring-2 ring-pink-400 inline-block"></span>Hoy
+					</span>
+					<span class="flex items-center gap-1.5">
+						<span class="w-2.5 h-2.5 rounded-full bg-pink-600 inline-block"></span>Seleccionado
+					</span>
+					<span class="flex items-center gap-1.5">
+						<span class="w-2.5 h-2.5 rounded-full bg-gray-200 inline-block"></span>No disponible
+					</span>
+				</div>
+			</div>
+
+			{# Horas disponibles #}
+			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+				<div class="px-5 py-4 border-b border-gray-100 bg-gray-50/80">
+					<p id="horas-titulo" class="text-sm font-bold text-gray-500">
+						Selecciona un día para ver los horarios disponibles
+					</p>
+				</div>
+				<div id="contenedor-horas"
+					 class="p-5 flex flex-wrap gap-2 min-h-[72px] items-start content-start">
+					{# Rellenado por JS #}
+				</div>
+			</div>
+
+		</div>
+
+		{# ─── COLUMNA DERECHA (sticky en desktop) ─── #}
+		<div class="lg:sticky lg:top-6 lg:self-start">
+			<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+				{# Fecha/hora seleccionada #}
+				<div class="p-5 bg-gradient-to-br from-pink-50 to-white border-b border-pink-100/60">
+					<p class="text-xs font-bold text-pink-400 uppercase tracking-wider mb-2">Tu cita</p>
+					<p id="resumen-hora" class="text-lg font-extrabold text-gray-800 leading-snug">
+						Selecciona fecha y hora
+					</p>
+				</div>
+
+				{# Servicios y total #}
+				<div class="p-5 border-b border-gray-100">
+					<p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Servicios</p>
+					<ul class="space-y-2">
+						{% for s in serviciosSeleccionados %}
+						<li class="flex items-center justify-between text-sm">
+							<span class="text-gray-700 flex items-center gap-2">
+								<span class="w-1.5 h-1.5 bg-pink-400 rounded-full shrink-0"></span>
+								{{ s.nombre }}
+							</span>
+							<span class="font-bold text-gray-800 ml-3 shrink-0">{{ s.precio|number_format(2, ',', '.') }}€</span>
+						</li>
+						{% endfor %}
+					</ul>
+					<div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+						<span class="text-xs text-gray-400">⏱ {{ duracionTotal }} min</span>
+						<span class="text-2xl font-extrabold text-gray-900">{{ precioTotal|number_format(2, ',', '.') }}€</span>
+					</div>
+				</div>
+
+				{# Formulario #}
+				<div class="p-5">
+
+					{{ form_start(form, {'attr': {'class': 'flex flex-col gap-5', 'id': 'form-reserva'}}) }}
+
+					{% if not form.vars.valid %}
+						<div class="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-200">
+							<ul class="space-y-1">
+							{% for child in form %}
+								{% for error in child.vars.errors %}
+									<li>{{ error.message }}</li>
+								{% endfor %}
+							{% endfor %}
+							</ul>
+						</div>
+					{% endif %}
+
+					{# Campos ocultos #}
+					<div class="hidden">
+						<input type="hidden" id="cita_fechaInicio" name="cita[fechaInicio]" value="">
+						{{ form_widget(form.notas) }}
+					</div>
+
+					{# Empleado #}
+					<div>
+						<label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">¿Con quién?</label>
+						{{ form_widget(form.empleado) }}
+						<p class="text-xs text-gray-400 mt-1.5">Deja «Sin preferencia» para asignación automática.</p>
+					</div>
+
+					{# Botón de reserva #}
+					<button type="button" id="btn-submit-fake"
+							class="w-full bg-gray-100 text-gray-400 font-bold py-3.5 px-6 rounded-xl cursor-not-allowed text-sm transition-colors">
+						Elige fecha y hora primero
+					</button>
+					<button type="submit" id="btn-submit-real"
+							class="hidden w-full bg-pink-600 hover:bg-pink-700 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-md hover:shadow-pink-500/30 transition-all text-sm">
+						Confirmar reserva →
+					</button>
+
+					{{ form_end(form) }}
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<script>
+// ===== DATOS =====
+const horasOcupadas  = {{ horasOcupadas|default('{}')|raw }};
+const diasBloqueados = {{ diasBloqueados|default('[]')|raw }};
+const horasTotales   = {{ slotsTotales|raw }};
+const reglasHorario  = {{ reglasHorario|default('[]')|raw }};
+
+// ===== ESTADO =====
+const hoy      = new Date();
+const todayStr = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
 let selectedDate = null;
 let selectedTime = null;
+let currentYear  = hoy.getFullYear();
+let currentMonth = hoy.getMonth();
 
-const horasOcupadas = {{ horasOcupadas|default('{}')|raw }};
-// ✅ NUEVO: array de fechas bloqueadas ['2025-08-15', ...]
-const diasBloqueados = {{ diasBloqueados|default('[]')|raw }};
+const MAX_MESES = 3;
+const MESES     = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIAS_ES   = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
 
-const horasTotales = {{ slotsTotales|raw }};
-
-const inputFecha = document.getElementById('cita_fechaInicio');
-const contenedorHoras = document.getElementById('contenedor-horas');
-const resumenHora = document.getElementById('resumen-hora');
-const btnFake = document.getElementById('btn-submit-fake');
-const btnReal = document.getElementById('btn-submit-real');
-
-// ✅ NUEVO: bloquear visualmente los días antes de asignar listeners
-document.querySelectorAll('.day-pill').forEach(pill => {
-const fecha = pill.dataset.date;
-
-if (diasBloqueados.includes(fecha) || diaSemanaBloqueadoPorRegla(fecha)) {
-
-pill.classList.add('opacity-40', 'cursor-not-allowed', 'line-through', 'bg-gray-100', 'border-gray-200');
-pill.classList.remove('hover:border-pink-600', 'hover:text-pink-600', 'cursor-pointer');
-pill.setAttribute('title', 'No disponible');
-pill.dataset.bloqueado = 'true'; // marca para el listener
+// ===== REGLAS =====
+function diaSemanaBloqueadoPorRegla(f) {
+	const d = new Date(f + 'T12:00:00').getDay();
+	return reglasHorario.some(r => r.dia === d && r.desde === null);
+}
+function horaBloquedaPorRegla(f, hora) {
+	const d = new Date(f + 'T12:00:00').getDay();
+	return reglasHorario.some(r => {
+		if (r.dia !== d || r.desde === null) return false;
+		return hora >= r.desde && hora < r.hasta;
+	});
 }
 
-});
+// ===== CALENDARIO =====
+function renderCalendario() {
+	document.getElementById('mes-label').textContent = MESES[currentMonth] + ' ' + currentYear;
 
-// Lógica al hacer clic en un DÍA
-document.querySelectorAll('.day-pill').forEach(pill => {
-pill.addEventListener('click', function () { // ✅ NUEVO: ignorar días bloqueados
-if (this.dataset.bloqueado === 'true') 
-return;
+	const hoyDate   = new Date(todayStr + 'T12:00:00');
+	const totalDias = new Date(currentYear, currentMonth + 1, 0).getDate();
+	let offset      = new Date(currentYear, currentMonth, 1).getDay();
+	offset = offset === 0 ? 6 : offset - 1; // Lun = 0
 
+	const grid = document.getElementById('grid-dias');
+	grid.innerHTML = '';
 
+	for (let i = 0; i < offset; i++) grid.appendChild(document.createElement('div'));
 
-document.querySelectorAll('.day-pill').forEach(p => {
-p.classList.remove('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
-p.classList.add('border-gray-200', 'text-gray-800');
-p.querySelector('.line-indicator').classList.replace('bg-pink-300', 'bg-gray-200');
-});
+	for (let dia = 1; dia <= totalDias; dia++) {
+		const m     = String(currentMonth + 1).padStart(2, '0');
+		const d     = String(dia).padStart(2, '0');
+		const fecha = `${currentYear}-${m}-${d}`;
+		const fDate = new Date(fecha + 'T12:00:00');
 
-this.classList.remove('border-gray-200', 'text-gray-800');
-this.classList.add('bg-pink-600', 'text-white', 'shadow-md', 'transform', 'scale-105');
-this.querySelector('.line-indicator').classList.replace('bg-gray-200', 'bg-pink-300');
+		const esPasado    = fDate < hoyDate;
+		const esBloqueado = !esPasado && (diasBloqueados.includes(fecha) || diaSemanaBloqueadoPorRegla(fecha));
+		const esHoy       = fecha === todayStr;
+		const esSeleccion = fecha === selectedDate;
+		const disponible  = !esPasado && !esBloqueado;
 
-selectedDate = this.dataset.date;
-selectedTime = null;
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.textContent = dia;
+		btn.dataset.fecha = fecha;
 
-renderizarHorasDisponibles(selectedDate);
-comprobarYActualizar();
-});
-});
+		let cls = 'w-full aspect-square flex items-center justify-center rounded-xl text-sm font-bold transition-all select-none focus:outline-none ';
 
-function renderizarHorasDisponibles(fechaSeleccionada) {
-contenedorHoras.innerHTML = '';
+		if (esPasado) {
+			cls += 'text-gray-200 cursor-not-allowed';
+			btn.disabled = true;
+		} else if (esBloqueado) {
+			cls += 'text-gray-300 line-through bg-gray-50/50 cursor-not-allowed';
+			btn.disabled = true;
+			btn.title = 'No disponible';
+		} else if (esSeleccion) {
+			cls += 'bg-pink-600 text-white shadow-md shadow-pink-200 scale-110 z-10 relative';
+		} else if (esHoy) {
+			cls += 'ring-2 ring-pink-400 ring-offset-1 text-pink-700 hover:bg-pink-50 cursor-pointer';
+		} else {
+			cls += 'text-gray-700 hover:bg-pink-50 hover:text-pink-600 cursor-pointer';
+		}
 
-const ocupadasHoy = horasOcupadas[fechaSeleccionada] || [];
-let hayHorasLibres = false;
+		btn.className = cls;
 
-const ahora = new Date();
-const hoyString = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0') + '-' + String(ahora.getDate()).padStart(2, '0');
-const horaActual = ahora.getHours();
-const minutoActual = ahora.getMinutes();
+		if (disponible) {
+			btn.addEventListener('click', function () {
+				selectedDate = this.dataset.fecha;
+				selectedTime = null;
+				comprobarYActualizar();
+				renderCalendario();
+				renderizarHorasDisponibles(selectedDate);
+			});
+		}
 
-horasTotales.forEach(hora => {
-let horaYaPasada = false;
+		grid.appendChild(btn);
+	}
 
-if (fechaSeleccionada === hoyString) {
-const [horaTurno, minutoTurno] = hora.split(':');
-if (parseInt(horaTurno) < horaActual || (parseInt(horaTurno) === horaActual && parseInt(minutoTurno) <= minutoActual)) {
-horaYaPasada = true;
+	// Botones de navegación
+	const prevBtn  = document.getElementById('prev-mes');
+	const enInicio = currentYear === hoy.getFullYear() && currentMonth === hoy.getMonth();
+	prevBtn.disabled  = enInicio;
+	prevBtn.className = 'flex items-center justify-center w-9 h-9 rounded-xl transition-colors ' +
+		(enInicio ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-pink-50 hover:text-pink-600 cursor-pointer');
+
+	const nextBtn = document.getElementById('next-mes');
+	let limY = hoy.getFullYear(), limM = hoy.getMonth() + MAX_MESES;
+	if (limM > 11) { limM -= 12; limY++; }
+	const enLimite = currentYear > limY || (currentYear === limY && currentMonth >= limM);
+	nextBtn.disabled  = enLimite;
+	nextBtn.className = 'flex items-center justify-center w-9 h-9 rounded-xl transition-colors ' +
+		(enLimite ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-pink-50 hover:text-pink-600 cursor-pointer');
 }
+
+// ===== HORAS =====
+function renderizarHorasDisponibles(fecha) {
+	const contenedor = document.getElementById('contenedor-horas');
+	const titulo     = document.getElementById('horas-titulo');
+	contenedor.innerHTML = '';
+
+	// Título contextual
+	const fObj = new Date(fecha + 'T12:00:00');
+	titulo.textContent = 'Horarios para el ' + DIAS_ES[fObj.getDay()] + ' ' + fObj.getDate() + ' de ' + MESES[fObj.getMonth()].toLowerCase();
+
+	const ocupadas   = horasOcupadas[fecha] || [];
+	const ahora      = new Date();
+	const hAct       = ahora.getHours();
+	const mAct       = ahora.getMinutes();
+	let hayLibres    = false;
+
+	horasTotales.forEach(hora => {
+		if (fecha === todayStr) {
+			const [h, m] = hora.split(':').map(Number);
+			if (h < hAct || (h === hAct && m <= mAct)) return;
+		}
+		if (ocupadas.includes(hora) || horaBloquedaPorRegla(fecha, hora)) return;
+
+		hayLibres = true;
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.className = 'time-pill px-4 py-2 border border-gray-200 bg-white text-gray-700 rounded-xl cursor-pointer hover:border-pink-400 hover:text-pink-600 hover:bg-pink-50 font-semibold text-sm transition-all focus:outline-none';
+		btn.dataset.time = hora;
+		btn.textContent  = hora;
+
+		btn.addEventListener('click', function () {
+			document.querySelectorAll('.time-pill').forEach(p => {
+				p.classList.remove('bg-pink-600', 'text-white', 'border-pink-600', 'shadow-md');
+				p.classList.add('border-gray-200', 'text-gray-700', 'bg-white');
+			});
+			this.classList.remove('border-gray-200', 'text-gray-700', 'bg-white');
+			this.classList.add('bg-pink-600', 'text-white', 'border-pink-600', 'shadow-md');
+			selectedTime = this.dataset.time;
+			comprobarYActualizar();
+		});
+
+		contenedor.appendChild(btn);
+	});
+
+	if (!hayLibres) {
+		contenedor.innerHTML = '<p class="text-red-500 font-semibold text-sm py-1">No hay horas disponibles para este día.</p>';
+	}
 }
 
-if (! ocupadasHoy.includes(hora) && ! horaYaPasada && !horaBloquedaPorRegla(fechaSeleccionada, hora)) {
-hayHorasLibres = true;
-const div = document.createElement('div');
-div.className = 'time-pill px-5 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-md cursor-pointer hover:border-pink-600 hover:text-pink-600 font-medium transition-all shadow-sm';
-div.dataset.time = hora;
-div.textContent = hora;
-
-div.addEventListener('click', function () {
-document.querySelectorAll('.time-pill').forEach(p => {
-p.classList.remove('bg-pink-600', 'text-white', 'shadow-md');
-p.classList.add('border-gray-200', 'text-gray-700', 'bg-white');
-});
-this.classList.remove('border-gray-200', 'text-gray-700', 'bg-white');
-this.classList.add('bg-pink-600', 'text-white', 'shadow-md');
-
-selectedTime = this.dataset.time;
-comprobarYActualizar();
-});
-
-contenedorHoras.appendChild(div);
-}
-});
-
-if (! hayHorasLibres) {
-contenedorHoras.innerHTML = '<p class="text-red-500 font-bold py-2 text-sm">No quedan horas disponibles para este día.</p>';
-}
-}
-
+// ===== ACTUALIZAR RESUMEN Y BOTÓN =====
 function comprobarYActualizar() {
-if (selectedDate && selectedTime) {
-inputFecha.value = selectedDate + 'T' + selectedTime;
-resumenHora.textContent = selectedDate.split('-').reverse().join('/') + ' a las ' + selectedTime;
-btnFake.classList.add('hidden');
-btnReal.classList.remove('hidden');
-} else {
-resumenHora.textContent = 'Selecciona hora';
-btnFake.classList.remove('hidden');
-btnReal.classList.add('hidden');
-inputFecha.value = '';
+	const inputFecha  = document.getElementById('cita_fechaInicio');
+	const resumenHora = document.getElementById('resumen-hora');
+	const btnFake     = document.getElementById('btn-submit-fake');
+	const btnReal     = document.getElementById('btn-submit-real');
+
+	if (selectedDate && selectedTime) {
+		inputFecha.value = selectedDate + 'T' + selectedTime;
+		const [y, mo, dd] = selectedDate.split('-');
+		const fObj = new Date(selectedDate + 'T12:00:00');
+		resumenHora.textContent = DIAS_ES[fObj.getDay()].charAt(0).toUpperCase() + DIAS_ES[fObj.getDay()].slice(1)
+			+ ' ' + dd + ' de ' + MESES[fObj.getMonth()].toLowerCase() + ' · ' + selectedTime + 'h';
+		btnFake.classList.add('hidden');
+		btnReal.classList.remove('hidden');
+	} else {
+		inputFecha.value = '';
+		resumenHora.textContent = 'Selecciona fecha y hora';
+		btnFake.classList.remove('hidden');
+		btnReal.classList.add('hidden');
+	}
 }
+
+// ===== CAMBIO DE MES =====
+function resetearSeleccionSiCambiaMes() {
+	if (!selectedDate) return;
+	const [sy, sm] = selectedDate.split('-').map(Number);
+	if (sm - 1 !== currentMonth || sy !== currentYear) {
+		selectedDate = null;
+		selectedTime = null;
+		comprobarYActualizar();
+		document.getElementById('horas-titulo').textContent = 'Selecciona un día para ver los horarios disponibles';
+		document.getElementById('contenedor-horas').innerHTML = '';
+	}
 }
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function () {
+	renderCalendario();
+
+	document.getElementById('prev-mes').addEventListener('click', function () {
+		if (this.disabled) return;
+		if (--currentMonth < 0) { currentMonth = 11; currentYear--; }
+		resetearSeleccionSiCambiaMes();
+		renderCalendario();
+	});
+
+	document.getElementById('next-mes').addEventListener('click', function () {
+		if (this.disabled) return;
+		if (++currentMonth > 11) { currentMonth = 0; currentYear++; }
+		resetearSeleccionSiCambiaMes();
+		renderCalendario();
+	});
 });
-
-
-const reglasHorario = {{ reglasHorario|default('[]')|raw }};
-// Ejemplo de lo que llega:
-// [{"dia":0,"desde":null,"hasta":null}, {"dia":6,"desde":"16:00","hasta":"19:00"}]
-
-// Recibe el string 'YYYY-MM-DD', devuelve true si hay regla de día completo
-function diaSemanaBloqueadoPorRegla(fechaStr) {
-const diaSemanaJS = new Date(fechaStr + 'T12:00:00').getDay(); // T12 evita bugs de timezone
-return reglasHorario.some(r => r.dia === diaSemanaJS && r.desde === null);
-}
-
-// Devuelve true si una hora 'HH:MM' está bloqueada por franja en ese día de la semana
-function horaBloquedaPorRegla(fechaStr, hora) {
-const diaSemanaJS = new Date(fechaStr + 'T12:00:00').getDay();
-return reglasHorario.some(r => {
-if (r.dia !== diaSemanaJS || r.desde === null) 
-return false;
-
-
-
-return hora >= r.desde && hora < r.hasta;
-});
-}
-	</script>
+</script>
 {% endblock %}

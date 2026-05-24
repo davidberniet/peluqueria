@@ -105,6 +105,20 @@
 				Locales
 			</a>
 
+			{# Mensajes de contacto #}
+			<a href="{{ path('app_admin_mensajes') }}"
+			   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors
+			          {{ currentRoute == 'app_admin_mensajes' ? 'bg-pink-600 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+				<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+						  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+				</svg>
+				<span class="flex-1">Mensajes</span>
+				{% if mensajesNoLeidos is defined and mensajesNoLeidos > 0 %}
+					<span class="bg-pink-500 text-white text-xs font-extrabold px-2 py-0.5 rounded-full">{{ mensajesNoLeidos }}</span>
+				{% endif %}
+			</a>
+
 			{# Separador #}
 			<div class="my-3 border-t border-gray-700"></div>
 			<p class="px-3 pb-2 text-xs font-bold text-gray-500 uppercase tracking-widest">Sistema</p>

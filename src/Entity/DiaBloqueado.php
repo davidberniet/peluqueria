@@ -15,11 +15,13 @@ class DiaBloqueado
     #[ORM\Column]
     private ?int $id = null;
 
-    // Solo la fecha, sin hora — un día completo bloqueado
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $fecha = null;
 
-    // Opcional pero muy útil para mostrar al cliente en el calendario
+    // Si se indica, el bloqueo abarca desde $fecha hasta $fechaFin inclusive (vacaciones, etc.)
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $fechaFin = null;
+
     #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
     private ?string $motivo = null;
 
@@ -44,6 +46,22 @@ class DiaBloqueado
     {
         $this->fecha = $fecha;
         return $this;
+    }
+
+    public function getFechaFin(): ?\DateTimeInterface
+    {
+        return $this->fechaFin;
+    }
+
+    public function setFechaFin(?\DateTimeInterface $fechaFin): static
+    {
+        $this->fechaFin = $fechaFin;
+        return $this;
+    }
+
+    public function esRango(): bool
+    {
+        return $this->fechaFin !== null && $this->fechaFin > $this->fecha;
     }
 
     public function getMotivo(): ?string

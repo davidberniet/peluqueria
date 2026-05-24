@@ -1,5 +1,4 @@
 <?php
-// src/Repository/DiaBloqueadoRepository.php
 
 namespace App\Repository;
 
@@ -15,8 +14,8 @@ class DiaBloqueadoRepository extends ServiceEntityRepository
     }
 
     /**
-     * Devuelve un array de strings 'YYYY-MM-DD' para los próximos N días.
-     * Formato listo para json_encode y consumir en JS directamente.
+     * Devuelve array de strings 'YYYY-MM-DD' para los próximos $dias días.
+     * Expande automáticamente los rangos (fechaFin) en días individuales.
      */
     public function findFechasBloqueadasProximos(int $dias = 14, ?int $localId = null): array
     {
@@ -24,23 +23,33 @@ class DiaBloqueadoRepository extends ServiceEntityRepository
         $fin = (clone $hoy)->modify("+{$dias} days");
 
         $qb = $this->createQueryBuilder('d')
-            ->select('d.fecha')
-            ->where('d.fecha >= :hoy')
-            ->andWhere('d.fecha <= :fin')
+            ->where('d.fecha <= :fin')
+            ->andWhere('(d.fechaFin IS NULL AND d.fecha >= :hoy) OR (d.fechaFin IS NOT NULL AND d.fechaFin >= :hoy)')
             ->setParameter('hoy', $hoy)
             ->setParameter('fin', $fin);
 
         if ($localId) {
-            $qb->andWhere('d.local = :local')
-                ->setParameter('local', $localId);
+            $qb->andWhere('d.local = :local')->setParameter('local', $localId);
         }
 
-        $results = $qb->getQuery()->getResult();
+        $bloques = $qb->getQuery()->getResult();
 
-        // Devuelve ['2025-08-15', '2025-08-20', ...]
-        return array_map(
-            fn($row) => $row['fecha']->format('Y-m-d'),
-            $results
-        );
+        $fechas = [];
+        foreach ($bloques as $bloque) {
+            $desde = clone $bloque->getFecha();
+            $hasta = $bloque->getFechaFin() ? clone $bloque->getFechaFin() : clone $desde;
+
+            // Clamp al rango consultado
+            if ($desde < $hoy) $desde = clone $hoy;
+            if ($hasta > $fin) $hasta = clone $fin;
+
+            $cursor = clone $desde;
+            while ($cursor <= $hasta) {
+                $fechas[] = $cursor->format('Y-m-d');
+                $cursor->modify('+1 day');
+            }
+        }
+
+        return array_values(array_unique($fechas));
     }
 }

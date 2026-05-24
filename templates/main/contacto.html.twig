@@ -160,7 +160,7 @@
                 </div>
             </div>
             <div class="p-5 sm:p-6">
-                <form id="form-contacto" class="flex flex-col gap-4" onsubmit="return enviarContacto(event)">
+                <form id="form-contacto" class="flex flex-col gap-4" onsubmit="return enviarContacto(event)" data-url="{{ path('app_contacto_enviar') }}">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-600 mb-2">Tu nombre</label>
@@ -238,17 +238,33 @@
 </div>
 
 <script>
-function enviarContacto(e) {
+async function enviarContacto(e) {
     e.preventDefault();
-    document.getElementById('form-contacto').classList.add('opacity-50', 'pointer-events-none');
-    setTimeout(function() {
-        document.getElementById('form-contacto').reset();
-        document.getElementById('form-contacto').classList.remove('opacity-50', 'pointer-events-none');
-        document.getElementById('contacto-ok').classList.remove('hidden');
-        setTimeout(function() {
-            document.getElementById('contacto-ok').classList.add('hidden');
-        }, 5000);
-    }, 800);
+    const form = document.getElementById('form-contacto');
+    form.classList.add('opacity-50', 'pointer-events-none');
+
+    const body = new URLSearchParams({
+        nombre:  document.getElementById('contacto-nombre').value,
+        email:   document.getElementById('contacto-email').value,
+        asunto:  document.getElementById('contacto-asunto').value,
+        mensaje: document.getElementById('contacto-mensaje').value,
+    });
+
+    try {
+        const res = await fetch(form.dataset.url, { method: 'POST', body });
+        const data = await res.json();
+        if (data.ok) {
+            form.reset();
+            document.getElementById('contacto-ok').classList.remove('hidden');
+            setTimeout(() => document.getElementById('contacto-ok').classList.add('hidden'), 5000);
+        } else {
+            alert(data.error || 'Error al enviar el mensaje. Inténtalo de nuevo.');
+        }
+    } catch {
+        alert('Error de conexión. Inténtalo de nuevo.');
+    } finally {
+        form.classList.remove('opacity-50', 'pointer-events-none');
+    }
     return false;
 }
 </script>

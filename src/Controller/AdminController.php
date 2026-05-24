@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\DiaBloqueado;
 use App\Entity\Local;
+use App\Entity\MensajeContacto;
 use App\Entity\Producto;
 use App\Entity\ReglaHorario;
 use App\Entity\User;
@@ -17,6 +18,7 @@ use App\Form\ServicioType;
 use App\Repository\CitaRepository;
 use App\Repository\DiaBloqueadoRepository;
 use App\Repository\HorarioRepository;
+use App\Repository\MensajeContactoRepository;
 use App\Repository\ProductoRepository;
 use App\Repository\ReglaHorarioRepository;
 use App\Repository\UserRepository;
@@ -73,67 +75,92 @@ class AdminController extends AbstractController
 
     #[Route('/configuracion', name: 'app_admin_configuracion')]
     public function configuracion(
+        Request $request,
+        EntityManagerInterface $em,
         DiaBloqueadoRepository $diasBloqueadosRepo,
         ReglaHorarioRepository $reglaHorarioRepo,
         HorarioRepository $horarioRepo
     ): Response {
+        $locales = $em->getRepository(Local::class)->findBy(['activo' => true]);
+
+        // Seleccionar local activo: query param o el primero disponible
+        $localId    = (int) $request->query->get('local', 0);
+        $localActivo = null;
+        foreach ($locales as $l) {
+            if ($l->getId() === $localId) { $localActivo = $l; break; }
+        }
+        if (!$localActivo && count($locales) > 0) {
+            $localActivo = $locales[0];
+        }
+
+        if (!$localActivo) {
+            $this->addFlash('error', 'No hay locales activos. Crea uno primero.');
+            return $this->redirectToRoute('app_admin_locales');
+        }
+
         return $this->render('admin/configuracion.html.twig', [
-            'diasBloqueados' => $diasBloqueadosRepo->findBy([], ['fecha' => 'ASC']),
-            'reglasHorario'  => $reglaHorarioRepo->findAll(),
-            'horarios'       => $horarioRepo->findAll(),
+            'locales'        => $locales,
+            'localActivo'    => $localActivo,
+            'diasBloqueados' => $diasBloqueadosRepo->findBy(['local' => $localActivo], ['fecha' => 'ASC']),
+            'reglasHorario'  => $reglaHorarioRepo->findBy(['local' => $localActivo]),
+            'horarios'       => $horarioRepo->findBy(['local' => $localActivo]),
         ]);
     }
 
-    // Añadir un día bloqueado desde el formulario del panel
     #[Route('/dias-bloqueados/nuevo', name: 'admin_dias_bloqueados', methods: ['POST'])]
     public function crearDiaBloqueado(Request $request, EntityManagerInterface $em): Response
     {
-        $fechaStr = $request->request->get('fecha');
-        $motivo = $request->request->get('motivo');
+        $fechaStr    = $request->request->get('fecha');
+        $fechaFinStr = $request->request->get('fecha_fin');
+        $motivo      = $request->request->get('motivo');
+        $localId     = (int) $request->request->get('local_id');
 
-        if ($fechaStr) {
-            $local = $em->getRepository(Local::class)->findOneBy([]);
+        $local = $em->getRepository(Local::class)->find($localId)
+            ?? $em->getRepository(Local::class)->findOneBy(['activo' => true]);
 
+        if ($fechaStr && $local) {
             $dia = new DiaBloqueado();
             $dia->setFecha(new \DateTime($fechaStr));
+            $dia->setLocal($local);
             $dia->setMotivo($motivo ?: null);
 
-            if ($local) {
-                $dia->setLocal($local);
+            if ($fechaFinStr && $fechaFinStr > $fechaStr) {
+                $dia->setFechaFin(new \DateTime($fechaFinStr));
             }
 
             $em->persist($dia);
             $em->flush();
 
-            $this->addFlash('success', 'Día bloqueado correctamente.');
+            $this->addFlash('success', $dia->esRango() ? 'Rango de fechas bloqueado correctamente.' : 'Día bloqueado correctamente.');
         }
 
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $local?->getId()]);
     }
 
-    // Eliminar un día bloqueado
     #[Route('/dias-bloqueados/{id}/eliminar', name: 'admin_dias_bloqueados_eliminar')]
     public function eliminarDiaBloqueado(DiaBloqueado $dia, EntityManagerInterface $em): Response
     {
+        $localId = $dia->getLocal()?->getId();
         $em->remove($dia);
         $em->flush();
 
-        $this->addFlash('success', 'Día desbloqueado correctamente.');
+        $this->addFlash('success', 'Bloqueo eliminado correctamente.');
 
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $localId]);
     }
 
     #[Route('/reglas-horario/nueva', name: 'admin_regla_horario_nueva', methods: ['POST'])]
     public function crearReglaHorario(Request $request, EntityManagerInterface $em): Response
     {
-        $local = $em->getRepository(Local::class)->findOneBy([]);
+        $localId = (int) $request->request->get('local_id');
+        $local   = $em->getRepository(Local::class)->find($localId)
+            ?? $em->getRepository(Local::class)->findOneBy(['activo' => true]);
 
         $regla = new ReglaHorario();
         $regla->setDiaSemana((int) $request->request->get('dia_semana'));
         $regla->setMotivo($request->request->get('motivo') ?: null);
         $regla->setLocal($local);
 
-        // Si vienen las horas, es una franja. Si no, es día completo.
         $desdeStr = $request->request->get('hora_desde');
         $hastaStr = $request->request->get('hora_hasta');
 
@@ -141,23 +168,23 @@ class AdminController extends AbstractController
             $regla->setHoraDesde(new \DateTime($desdeStr));
             $regla->setHoraHasta(new \DateTime($hastaStr));
         }
-        // Si están vacías se quedan null → día completo bloqueado
 
         $em->persist($regla);
         $em->flush();
 
         $this->addFlash('success', 'Regla añadida correctamente.');
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $local?->getId()]);
     }
 
     #[Route('/reglas-horario/{id}/eliminar', name: 'admin_regla_horario_eliminar')]
     public function eliminarReglaHorario(ReglaHorario $regla, EntityManagerInterface $em): Response
     {
+        $localId = $regla->getLocal()?->getId();
         $em->remove($regla);
         $em->flush();
 
         $this->addFlash('success', 'Regla eliminada correctamente.');
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $localId]);
     }
 
     // --- VER TODAS LAS CITAS (HISTORIAL COMPLETO) ---
@@ -356,7 +383,9 @@ class AdminController extends AbstractController
     #[Route('/horarios/nuevo', name: 'admin_horario_nuevo', methods: ['POST'])]
     public function crearHorario(Request $request, EntityManagerInterface $em): Response
     {
-        $local = $em->getRepository(Local::class)->findOneBy([]);
+        $localId = (int) $request->request->get('local_id');
+        $local   = $em->getRepository(Local::class)->find($localId)
+            ?? $em->getRepository(Local::class)->findOneBy(['activo' => true]);
 
         $horario = new Horario();
         $horario->setHoraApertura(new \DateTime($request->request->get('hora_apertura')));
@@ -368,17 +397,18 @@ class AdminController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Franja horaria añadida.');
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $local?->getId()]);
     }
 
     #[Route('/horarios/{id}/eliminar', name: 'admin_horario_eliminar')]
     public function eliminarHorario(Horario $horario, EntityManagerInterface $em): Response
     {
+        $localId = $horario->getLocal()?->getId();
         $em->remove($horario);
         $em->flush();
 
         $this->addFlash('success', 'Franja horaria eliminada.');
-        return $this->redirectToRoute('app_admin_configuracion');
+        return $this->redirectToRoute('app_admin_configuracion', ['local' => $localId]);
     }
 
     #[Route('/cliente/{id}', name: 'app_admin_cliente_ficha')]
@@ -533,5 +563,36 @@ class AdminController extends AbstractController
 
         $this->addFlash('success', 'Local desactivado correctamente.');
         return $this->redirectToRoute('app_admin_locales');
+    }
+
+    // =====================================================================
+    // MENSAJES DE CONTACTO
+    // =====================================================================
+
+    #[Route('/mensajes', name: 'app_admin_mensajes')]
+    public function listaMensajes(MensajeContactoRepository $repo): Response
+    {
+        return $this->render('admin/mensajes.html.twig', [
+            'mensajes' => $repo->findBy([], ['creadoEn' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/mensaje/{id}/leer', name: 'app_admin_mensaje_leer')]
+    public function leerMensaje(MensajeContacto $mensaje, EntityManagerInterface $em): Response
+    {
+        $mensaje->setLeido(true);
+        $em->flush();
+
+        return $this->redirectToRoute('app_admin_mensajes');
+    }
+
+    #[Route('/mensaje/{id}/eliminar', name: 'app_admin_mensaje_eliminar')]
+    public function eliminarMensaje(MensajeContacto $mensaje, EntityManagerInterface $em): Response
+    {
+        $em->remove($mensaje);
+        $em->flush();
+
+        $this->addFlash('success', 'Mensaje eliminado.');
+        return $this->redirectToRoute('app_admin_mensajes');
     }
 }
