@@ -115,7 +115,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -160,7 +159,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     #[\Deprecated]
     public function eraseCredentials(): void
     {
-        // @deprecated, to be removed when upgrading to Symfony 8
     }
 
     public function getNombre(): ?string
@@ -208,7 +206,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function removeCita(Cita $cita): static
     {
         if ($this->citas->removeElement($cita)) {
-            // set the owning side to null (unless already changed)
             if ($cita->getUsuario() === $this) {
                 $cita->setUsuario(null);
             }
@@ -238,7 +235,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function removeCitasAtendida(Cita $citasAtendida): static
     {
         if ($this->citasAtendidas->removeElement($citasAtendida)) {
-            // set the owning side to null (unless already changed)
             if ($citasAtendida->getEmpleado() === $this) {
                 $citasAtendida->setEmpleado(null);
             }

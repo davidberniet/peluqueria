@@ -91,6 +91,7 @@ class AppFixtures extends Fixture
             ['Cera Fijación Fuerte', 'American Crew', 'Acabado mate y fijación duradera.', 15.00, 'cera.jpg', $local1]
         ];
 
+        $productosEntidades = [];
         foreach ($productos as $datos) {
             $producto = new Producto();
             $producto->setNombre($datos[0]);
@@ -101,6 +102,7 @@ class AppFixtures extends Fixture
             $producto->addLocale($datos[5]); // ManyToMany → addLocale(), no setLocal()
             $producto->setStock(10);
             $manager->persist($producto);
+            $productosEntidades[] = $producto;
         }
 
         // 4. HORARIOS 
@@ -186,6 +188,7 @@ class AppFixtures extends Fixture
         $cita1->setEmpleado($merce);
         $cita1->setEstado('Confirmada');
         $cita1->addServicio($serviciosEntidades[0]); // Corte Caballero
+        $cita1->addProducto($productosEntidades[0]); // Champú Color Vive
         $fechaCita1 = new \DateTime('tomorrow 10:00:00');
         $cita1->setFechaInicio($fechaCita1);
         $cita1->setFechaFin((clone $fechaCita1)->modify('+30 minutes'));
@@ -213,6 +216,55 @@ class AppFixtures extends Fixture
         $cita3->setFechaInicio($fechaCita3);
         $cita3->setFechaFin((clone $fechaCita3)->modify('+30 minutes'));
         $manager->persist($cita3);
+
+        // 7. CITAS PASADAS CON VALORACIÓN (aparecen en la home)
+        $resenas = [
+            [
+                'cliente'    => $clientes[0], // Antonio
+                'local'      => $local1,
+                'empleado'   => $merce,
+                'servicio'   => $serviciosEntidades[0], // Corte Señora
+                'fecha'      => '-20 days 11:00:00',
+                'duracion'   => 60,
+                'valoracion' => 5,
+                'comentario' => 'Reservé por la web en menos de un minuto. Me atendieron genial y salí con un corte espectacular. Totalmente recomendado.',
+            ],
+            [
+                'cliente'    => $clientes[1], // Sara
+                'local'      => $local1,
+                'empleado'   => $laura,
+                'servicio'   => $serviciosEntidades[4], // Coloración
+                'fecha'      => '-12 days 10:00:00',
+                'duracion'   => 120,
+                'valoracion' => 5,
+                'comentario' => 'La coloración me quedó preciosa. Los productos que usan son de altísima calidad y el resultado dura muchísimo. ¡Volvería mil veces!',
+            ],
+            [
+                'cliente'    => $clientes[2], // Pedro
+                'local'      => $local2,
+                'empleado'   => $carlos,
+                'servicio'   => $serviciosEntidades[5], // Corte Caballero local2
+                'fecha'      => '-5 days 17:00:00',
+                'duracion'   => 30,
+                'valoracion' => 4,
+                'comentario' => 'Genial poder ver la disponibilidad en tiempo real y no tener que llamar. La atención es 10/10 y el ambiente del salón es muy acogedor.',
+            ],
+        ];
+
+        foreach ($resenas as $datos) {
+            $cita = new Cita();
+            $cita->setUsuario($datos['cliente']);
+            $cita->setLocal($datos['local']);
+            $cita->setEmpleado($datos['empleado']);
+            $cita->setEstado('Confirmada');
+            $cita->addServicio($datos['servicio']);
+            $fecha = new \DateTime($datos['fecha']);
+            $cita->setFechaInicio($fecha);
+            $cita->setFechaFin((clone $fecha)->modify('+' . $datos['duracion'] . ' minutes'));
+            $cita->setValoracion($datos['valoracion']);
+            $cita->setComentarioValoracion($datos['comentario']);
+            $manager->persist($cita);
+        }
 
         $manager->flush();
     }

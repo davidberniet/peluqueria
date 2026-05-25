@@ -28,7 +28,7 @@ class PerfilController extends AbstractController
         if ($formPerfil->isSubmitted() && $formPerfil->isValid()) {
             $em->flush();
             $this->addFlash('success_perfil', 'Datos actualizados correctamente.');
-            return $this->redirectToRoute('app_cliente_perfil', [], 301, '#perfil');
+            return $this->redirectToRoute('app_cliente_perfil', [], 302, '#perfil');
         }
 
         // --- Formulario de cambio de contraseña ---
@@ -41,14 +41,14 @@ class PerfilController extends AbstractController
             // Verificar que la contraseña actual es correcta
             if (!$hasher->isPasswordValid($user, $data['passwordActual'])) {
                 $this->addFlash('error_password', 'La contraseña actual no es correcta.');
-                return $this->redirectToRoute('app_cliente_perfil', [], 301, '#password');
+                return $this->redirectToRoute('app_cliente_perfil', [], 302, '#password');
             }
 
             $user->setPassword($hasher->hashPassword($user, $data['nuevaPassword']));
             $em->flush();
 
             $this->addFlash('success_password', 'Contraseña cambiada correctamente.');
-            return $this->redirectToRoute('app_cliente_perfil', [], 301, '#password');
+            return $this->redirectToRoute('app_cliente_perfil', [], 302, '#password');
         }
 
         // --- Historial de citas ---
@@ -63,6 +63,9 @@ class PerfilController extends AbstractController
                 $totalCitas++;
                 foreach ($cita->getServicios() as $servicio) {
                     $totalGastado += $servicio->getPrecio();
+                }
+                foreach ($cita->getProductos() as $producto) {
+                    $totalGastado += $producto->getPrecio();
                 }
             }
         }

@@ -177,8 +177,7 @@ class Local
     public function removeHorario(Horario $horario): static
     {
         if ($this->horarios->removeElement($horario)) {
-            // set the owning side to null (unless already changed)
-            if ($horario->getLocal() === $this) {
+if ($horario->getLocal() === $this) {
                 $horario->setLocal(null);
             }
         }
@@ -207,8 +206,7 @@ class Local
     public function removeCita(Cita $cita): static
     {
         if ($this->citas->removeElement($cita)) {
-            // set the owning side to null (unless already changed)
-            if ($cita->getLocal() === $this) {
+if ($cita->getLocal() === $this) {
                 $cita->setLocal(null);
             }
         }
@@ -264,8 +262,7 @@ class Local
     public function removeServicio(Servicio $servicio): static
     {
         if ($this->servicios->removeElement($servicio)) {
-            // set the owning side to null (unless already changed)
-            if ($servicio->getLocal() === $this) {
+if ($servicio->getLocal() === $this) {
                 $servicio->setLocal(null);
             }
         }
@@ -294,8 +291,7 @@ class Local
     public function removeReglaHorario(ReglaHorario $reglaHorario): static
     {
         if ($this->reglaHorarios->removeElement($reglaHorario)) {
-            // set the owning side to null (unless already changed)
-            if ($reglaHorario->getLocal() === $this) {
+if ($reglaHorario->getLocal() === $this) {
                 $reglaHorario->setLocal(null);
             }
         }
@@ -324,8 +320,7 @@ class Local
     public function removeEmpleado(User $empleado): static
     {
         if ($this->empleados->removeElement($empleado)) {
-            // set the owning side to null (unless already changed)
-            if ($empleado->getLocal() === $this) {
+if ($empleado->getLocal() === $this) {
                 $empleado->setLocal(null);
             }
         }

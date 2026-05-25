@@ -16,21 +16,6 @@ class ServicioRepository extends ServiceEntityRepository
         parent::__construct($registry, Servicio::class);
     }
 
-    //    /**
-    //     * @return Servicio[] Returns an array of Servicio objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('s')
-    //            ->andWhere('s.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('s.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
     /**
      * @return Servicio[]
      */

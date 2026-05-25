@@ -12,15 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/cliente')]
 class ClienteController extends AbstractController
 {
-    #[Route('/perfil', name: 'app_cliente_perfil')]
-    public function perfil(): Response
-    {
-        return $this->render('cliente/index.html.twig', [
-            'controller_name' => 'Mi Perfil',
-        ]);
-    }
-
-    #[Route('/mis-citas', name: 'app_cliente_citas')]
+#[Route('/mis-citas', name: 'app_cliente_citas')]
     public function misCitas(CitaRepository $citaRepository): Response
     {
         // Buscamos las citas del usuario que está conectado

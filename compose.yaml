@@ -69,6 +69,21 @@ services:
     networks:
       - venus_network
 
+# ─── PHPMYADMIN (Interfaz de gestión de MySQL) ─────────────────────────
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: venus_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: database
+      PMA_USER: app
+      PMA_PASSWORD: app
+    depends_on:
+      - database
+    networks:
+      - venus_network
+
 volumes:
   database_data:
   uploads_data:

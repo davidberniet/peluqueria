@@ -138,4 +138,18 @@ class CitaRepository extends ServiceEntityRepository
 
         return $horasOcupadas;
     }
+
+    /**
+     * @return Cita[]
+     */
+    public function findUltimasResenas(int $limit = 3): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.comentarioValoracion IS NOT NULL')
+            ->andWhere('c.valoracion IS NOT NULL')
+            ->orderBy('c.fechaInicio', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

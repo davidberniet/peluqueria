@@ -218,64 +218,91 @@
 	<section class="mb-16">
 		<div class="text-center mb-10">
 			<span class="text-pink-500 font-bold tracking-wider uppercase text-sm">Opiniones reales</span>
-			<h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">Lo que dicen nuestras clientes</h2>
+			<h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2">Lo que dicen nuestros clientes</h2>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-			<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-				<div class="flex gap-1 mb-4">
-					{% for i in 1..5 %}
-						<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-					{% endfor %}
-				</div>
-				<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"Reservé por la web en menos de un minuto. Llegué, me atendieron genial y salí con un corte espectacular. Totalmente recomendado."</p>
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center flex-shrink-0">
-						<span class="text-pink-700 font-bold text-sm">ML</span>
-					</div>
-					<div>
-						<p class="font-bold text-gray-900 text-sm">María López</p>
-						<p class="text-gray-400 text-xs">Cliente habitual</p>
-					</div>
-				</div>
-			</div>
+			{% if resenas %}
+				{% for cita in resenas %}
+					{% if loop.index == 2 %}
+						{% set bgColor = 'bg-purple-200' %}
+						{% set textColor = 'text-purple-700' %}
+					{% elseif loop.index == 3 %}
+						{% set bgColor = 'bg-green-200' %}
+						{% set textColor = 'text-green-700' %}
+					{% else %}
+						{% set bgColor = 'bg-pink-200' %}
+						{% set textColor = 'text-pink-700' %}
+					{% endif %}
 
-			<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-				<div class="flex gap-1 mb-4">
-					{% for i in 1..5 %}
-						<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-					{% endfor %}
-				</div>
-				<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"El balayage me quedó precioso. Los productos que usan son de altísima calidad y el resultado dura muchísimo. ¡Volvería mil veces!"</p>
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center flex-shrink-0">
-						<span class="text-purple-700 font-bold text-sm">SR</span>
+					<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+						<div class="flex gap-1 mb-4">
+							{% for i in 1..5 %}
+								<svg class="w-4 h-4 {{ i <= cita.valoracion ? 'text-yellow-400' : 'text-gray-200' }} fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+							{% endfor %}
+						</div>
+						<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"{{ cita.comentarioValoracion }}"</p>
+						<div class="flex items-center gap-3">
+							<div class="w-10 h-10 rounded-full {{ bgColor }} flex items-center justify-center flex-shrink-0">
+								<span class="{{ textColor }} font-bold text-sm">{{ cita.usuario.nombre|slice(0, 2)|upper }}</span>
+							</div>
+							<div>
+								<p class="font-bold text-gray-900 text-sm">{{ cita.usuario.nombre }}</p>
+								<p class="text-gray-400 text-xs">{{ cita.fechaInicio|date('d/m/Y') }}</p>
+							</div>
+						</div>
 					</div>
-					<div>
-						<p class="font-bold text-gray-900 text-sm">Sofía Ramírez</p>
-						<p class="text-gray-400 text-xs">Nueva clienta</p>
+				{% endfor %}
+			{% else %}
+				<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+					<div class="flex gap-1 mb-4">
+						{% for i in 1..5 %}<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
+					</div>
+					<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"Reservé por la web en menos de un minuto. Llegué, me atendieron genial y salí con un corte espectacular. Totalmente recomendado."</p>
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 rounded-full bg-pink-200 flex items-center justify-center flex-shrink-0">
+							<span class="text-pink-700 font-bold text-sm">ML</span>
+						</div>
+						<div>
+							<p class="font-bold text-gray-900 text-sm">María López</p>
+							<p class="text-gray-400 text-xs">Cliente habitual</p>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-				<div class="flex gap-1 mb-4">
-					{% for i in 1..5 %}
-						<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-					{% endfor %}
-				</div>
-				<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"Genial poder ver la disponibilidad en tiempo real y no tener que llamar. La atención es 10/10 y el ambiente del salón es muy acogedor."</p>
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
-						<span class="text-green-700 font-bold text-sm">AG</span>
+				<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+					<div class="flex gap-1 mb-4">
+						{% for i in 1..5 %}<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
 					</div>
-					<div>
-						<p class="font-bold text-gray-900 text-sm">Ana García</p>
-						<p class="text-gray-400 text-xs">Cliente VIP</p>
+					<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"El balayage me quedó precioso. Los productos que usan son de altísima calidad y el resultado dura muchísimo. ¡Volvería mil veces!"</p>
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center flex-shrink-0">
+							<span class="text-purple-700 font-bold text-sm">SR</span>
+						</div>
+						<div>
+							<p class="font-bold text-gray-900 text-sm">Sofía Ramírez</p>
+							<p class="text-gray-400 text-xs">Nueva clienta</p>
+						</div>
 					</div>
 				</div>
-			</div>
+
+				<div class="bg-white rounded-2xl p-7 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+					<div class="flex gap-1 mb-4">
+						{% for i in 1..5 %}<svg class="w-4 h-4 text-yellow-400 fill-current" viewbox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{% endfor %}
+					</div>
+					<p class="text-gray-600 text-sm leading-relaxed mb-5 italic">"Genial poder ver la disponibilidad en tiempo real y no tener que llamar. La atención es 10/10 y el ambiente del salón es muy acogedor."</p>
+					<div class="flex items-center gap-3">
+						<div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center flex-shrink-0">
+							<span class="text-green-700 font-bold text-sm">AG</span>
+						</div>
+						<div>
+							<p class="font-bold text-gray-900 text-sm">Ana García</p>
+							<p class="text-gray-400 text-xs">Cliente VIP</p>
+						</div>
+					</div>
+				</div>
+			{% endif %}
 
 		</div>
 	</section>

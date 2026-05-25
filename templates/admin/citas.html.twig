@@ -9,87 +9,262 @@
 		<p class="text-gray-500 mt-1">Revisa el listado general de reservas del sistema.</p>
 	</div>
 
+	{# Calcular contadores por pestaña #}
+	{% set cntPendientes  = 0 %}
+	{% set cntConfirmadas = 0 %}
+	{% set cntCompletadas = 0 %}
+	{% set cntCanceladas  = 0 %}
+	{% for cita in citas %}
+		{% if cita.estado == 'Cancelada' %}
+			{% set cntCanceladas = cntCanceladas + 1 %}
+		{% elseif cita.estado == 'Completada' or cita.fechaInicio < date() %}
+			{% set cntCompletadas = cntCompletadas + 1 %}
+		{% elseif cita.estado == 'Confirmada' %}
+			{% set cntConfirmadas = cntConfirmadas + 1 %}
+		{% else %}
+			{% set cntPendientes = cntPendientes + 1 %}
+		{% endif %}
+	{% endfor %}
+
 	<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-			<div class="overflow-x-auto p-4">
-				<table class="w-full text-left border-collapse">
-					<thead>
-						<tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
-							<th class="px-6 py-4 font-semibold">Cliente</th>
-							<th class="px-6 py-4 font-semibold">Servicio</th>
-							<th class="px-6 py-4 font-semibold">Fecha y Hora</th>
-							<th class="px-6 py-4 font-semibold">Estado</th>
-							<th class="px-6 py-4 font-semibold text-right">Acciones</th>
-						</tr>
-					</thead>
-					<tbody class="text-sm text-gray-700">
-						{% for cita in citas %}
-							<tr class="border-b border-gray-50 hover:bg-pink-50 transition">
-								<td class="px-6 py-4 font-bold text-gray-900">
-									<a href="{{ path('app_admin_cliente_ficha', {'id': cita.usuario.id}) }}" class="hover:text-pink-600 transition">
-										{{ cita.usuario.nombre }}
-									</a>
-									<span class="block text-xs font-normal text-gray-500">{{ cita.usuario.email }}</span>
-
-									{% if cita.usuario.telefono %}
-										<span class="block text-xs font-semibold text-pink-600 mt-0.5">{{ cita.usuario.telefono }}</span>
-									{% endif %}
-								</td>
-
-
-								<td class="px-6 py-4">
-									{% for servicio in cita.servicios %}
-										{{ servicio.nombre }}
-										{% if not loop.last %}
-											+
-										{% endif %}
-									{% else %}
-										Cita General
-									{% endfor %}
-								</td>
-
-								<td class="px-6 py-4 font-semibold text-pink-600">
-									{{ cita.fechaInicio|date('d/m/Y') }}<br>
-									<span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
-								</td>
-
-								<td class="px-6 py-4">
-									{% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
-										<span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">Completada</span>
-									{% elseif cita.estado == 'Pendiente' %}
-										<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-									{% elseif cita.estado == 'Confirmada' %}
-										<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-									{% else %}
-										<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">{{ cita.estado }}</span>
-									{% endif %}
-								</td>
-
-								<td class="px-6 py-4 text-right">
-									<div class="flex justify-end gap-2">
-										{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
-											<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-100 text-green-600 font-bold px-3 py-1.5 rounded-lg border border-green-200 transition-colors text-xs">
-												Confirmar
-											</a>
-										{% endif %}
-
-										{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
-											<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
-												Cancelar
-											</a>
-										{% endif %}
-									</div>
-								</td>
-							</tr>
-						{% else %}
-							<tr>
-								<td colspan="5" class="px-6 py-8 text-center text-gray-500">
-									No hay citas registradas en el sistema.
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
+		{# Pestañas #}
+		<div class="flex border-b border-gray-100 overflow-x-auto bg-white">
+			<button onclick="showTab('pendientes')" id="tab-pendientes"
+				class="tab-btn flex items-center gap-2 px-5 py-4 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap">
+				⏳ Pendientes
+				<span class="bg-yellow-100 text-yellow-700 text-xs font-extrabold px-2 py-0.5 rounded-full">{{ cntPendientes }}</span>
+			</button>
+			<button onclick="showTab('confirmadas')" id="tab-confirmadas"
+				class="tab-btn flex items-center gap-2 px-5 py-4 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap">
+				✅ Confirmadas
+				<span class="bg-green-100 text-green-700 text-xs font-extrabold px-2 py-0.5 rounded-full">{{ cntConfirmadas }}</span>
+			</button>
+			<button onclick="showTab('completadas')" id="tab-completadas"
+				class="tab-btn flex items-center gap-2 px-5 py-4 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap">
+				✔️ Completadas
+				<span class="bg-gray-100 text-gray-600 text-xs font-extrabold px-2 py-0.5 rounded-full">{{ cntCompletadas }}</span>
+			</button>
+			<button onclick="showTab('canceladas')" id="tab-canceladas"
+				class="tab-btn flex items-center gap-2 px-5 py-4 text-sm font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap">
+				❌ Canceladas
+				<span class="bg-red-100 text-red-600 text-xs font-extrabold px-2 py-0.5 rounded-full">{{ cntCanceladas }}</span>
+			</button>
 		</div>
+
+		{# --- Versión móvil: tarjetas --- #}
+		<div class="block md:hidden divide-y divide-gray-100">
+			{% for cita in citas %}
+				{% if cita.estado == 'Cancelada' %}
+					{% set tabGroup = 'canceladas' %}
+				{% elseif cita.estado == 'Completada' or cita.fechaInicio < date() %}
+					{% set tabGroup = 'completadas' %}
+				{% elseif cita.estado == 'Confirmada' %}
+					{% set tabGroup = 'confirmadas' %}
+				{% else %}
+					{% set tabGroup = 'pendientes' %}
+				{% endif %}
+
+				<div class="cita-item p-5" data-tab="{{ tabGroup }}">
+					<div class="flex justify-between items-start mb-2">
+						<div>
+							<a href="{{ path('app_admin_cliente_ficha', {'id': cita.usuario.id}) }}" class="font-extrabold text-gray-900 hover:text-pink-600 transition">
+								{{ cita.usuario.nombre }}
+							</a>
+							<p class="text-xs text-gray-400">{{ cita.usuario.email }}</p>
+							{% if cita.usuario.telefono %}
+								<p class="text-xs font-semibold text-pink-600">{{ cita.usuario.telefono }}</p>
+							{% endif %}
+						</div>
+						<div class="text-right shrink-0 ml-3">
+							<p class="font-extrabold text-pink-600">{{ cita.fechaInicio|date('H:i') }}</p>
+							<p class="text-xs text-gray-400">{{ cita.fechaInicio|date('d/m/Y') }}</p>
+						</div>
+					</div>
+
+					<p class="text-sm font-semibold text-gray-700 mb-2">
+						{% for servicio in cita.servicios %}{{ servicio.nombre }}{% if not loop.last %} + {% endif %}{% else %}Cita General{% endfor %}
+					</p>
+
+					{% if cita.productos|length > 0 %}
+						<div class="flex flex-wrap gap-1 mb-3">
+							{% for producto in cita.productos %}
+								<span class="inline-flex items-center text-xs font-semibold bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full border border-pink-100">
+									🛍️ {{ producto.nombre }}
+								</span>
+							{% endfor %}
+						</div>
+					{% endif %}
+
+					<div class="flex justify-between items-center">
+						{% if tabGroup == 'pendientes' %}
+							<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">⏳ Pendiente</span>
+						{% elseif tabGroup == 'confirmadas' %}
+							<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">✅ Confirmada</span>
+						{% elseif tabGroup == 'completadas' %}
+							<span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">✔️ Completada</span>
+						{% else %}
+							<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">❌ Cancelada</span>
+						{% endif %}
+
+						<div class="flex gap-2">
+							{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
+								<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-500 hover:bg-green-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors">
+									Confirmar
+								</a>
+							{% endif %}
+							{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
+								<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors">
+									Cancelar
+								</a>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+
+			{# Mensaje vacío por pestaña (móvil) #}
+			{% for tabName in ['pendientes', 'confirmadas', 'completadas', 'canceladas'] %}
+				<div class="tab-empty hidden p-8 text-center text-gray-400 text-sm" data-for-tab="{{ tabName }}">
+					{% if citas is empty %}No hay citas registradas en el sistema.{% else %}No hay citas en este estado.{% endif %}
+				</div>
+			{% endfor %}
+		</div>
+
+		{# --- Versión escritorio: tabla --- #}
+		<div class="hidden md:block overflow-x-auto">
+			<table class="w-full text-left border-collapse">
+				<thead>
+					<tr class="text-gray-400 text-xs uppercase bg-white border-b border-gray-100">
+						<th class="px-6 py-4 font-semibold">Cliente</th>
+						<th class="px-6 py-4 font-semibold">Servicio</th>
+						<th class="px-6 py-4 font-semibold">Fecha y Hora</th>
+						<th class="px-6 py-4 font-semibold">Estado</th>
+						<th class="px-6 py-4 font-semibold text-right">Acciones</th>
+					</tr>
+				</thead>
+				<tbody class="text-sm text-gray-700">
+					{% for cita in citas %}
+						{% if cita.estado == 'Cancelada' %}
+							{% set tabGroup = 'canceladas' %}
+						{% elseif cita.estado == 'Completada' or cita.fechaInicio < date() %}
+							{% set tabGroup = 'completadas' %}
+						{% elseif cita.estado == 'Confirmada' %}
+							{% set tabGroup = 'confirmadas' %}
+						{% else %}
+							{% set tabGroup = 'pendientes' %}
+						{% endif %}
+
+						<tr class="cita-item border-b border-gray-50 hover:bg-pink-50 transition" data-tab="{{ tabGroup }}">
+							<td class="px-6 py-4 font-bold text-gray-900">
+								<a href="{{ path('app_admin_cliente_ficha', {'id': cita.usuario.id}) }}" class="hover:text-pink-600 transition">
+									{{ cita.usuario.nombre }}
+								</a>
+								<span class="block text-xs font-normal text-gray-500">{{ cita.usuario.email }}</span>
+								{% if cita.usuario.telefono %}
+									<span class="block text-xs font-semibold text-pink-600 mt-0.5">{{ cita.usuario.telefono }}</span>
+								{% endif %}
+							</td>
+
+							<td class="px-6 py-4">
+								{% for servicio in cita.servicios %}
+									{{ servicio.nombre }}
+									{% if not loop.last %}+{% endif %}
+								{% else %}
+									Cita General
+								{% endfor %}
+								{% if cita.productos|length > 0 %}
+									<div class="mt-1.5 flex flex-wrap gap-1">
+										{% for producto in cita.productos %}
+											<span class="inline-flex items-center text-xs font-semibold bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full border border-pink-100">
+												🛍️ {{ producto.nombre }}
+											</span>
+										{% endfor %}
+									</div>
+								{% endif %}
+							</td>
+
+							<td class="px-6 py-4 font-semibold text-pink-600">
+								{{ cita.fechaInicio|date('d/m/Y') }}<br>
+								<span class="text-gray-500 text-xs">{{ cita.fechaInicio|date('H:i') }}</span>
+							</td>
+
+							<td class="px-6 py-4">
+								{% if tabGroup == 'pendientes' %}
+									<span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">⏳ Pendiente</span>
+								{% elseif tabGroup == 'confirmadas' %}
+									<span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">✅ Confirmada</span>
+								{% elseif tabGroup == 'completadas' %}
+									<span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">✔️ Completada</span>
+								{% else %}
+									<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">❌ Cancelada</span>
+								{% endif %}
+							</td>
+
+							<td class="px-6 py-4 text-right">
+								<div class="flex justify-end gap-2">
+									{% if cita.estado == 'Pendiente' and cita.fechaInicio > date() %}
+										<a href="{{ path('app_admin_cita_confirmar', {'id': cita.id}) }}" class="bg-green-50 hover:bg-green-100 text-green-600 font-bold px-3 py-1.5 rounded-lg border border-green-200 transition-colors text-xs">
+											Confirmar
+										</a>
+									{% endif %}
+									{% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
+										<a href="{{ path('app_admin_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Seguro que quieres cancelar esta cita?')" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded-lg border border-red-200 transition-colors text-xs">
+											Cancelar
+										</a>
+									{% endif %}
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+
+					{# Mensaje vacío por pestaña (escritorio) #}
+					{% for tabName in ['pendientes', 'confirmadas', 'completadas', 'canceladas'] %}
+						<tr class="tab-empty hidden" data-for-tab="{{ tabName }}">
+							<td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">
+								{% if citas is empty %}No hay citas registradas en el sistema.{% else %}No hay citas en este estado.{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<script>
+		function showTab(tab) {
+			document.querySelectorAll('.tab-btn').forEach(btn => {
+				btn.classList.remove('border-pink-500', 'text-gray-900');
+				btn.classList.add('border-transparent', 'text-gray-400');
+			});
+			const activeBtn = document.getElementById('tab-' + tab);
+			if (activeBtn) {
+				activeBtn.classList.remove('border-transparent', 'text-gray-400');
+				activeBtn.classList.add('border-pink-500', 'text-gray-900');
+			}
+
+			document.querySelectorAll('.cita-item').forEach(item => {
+				item.style.display = item.dataset.tab === tab ? '' : 'none';
+			});
+
+			document.querySelectorAll('.tab-empty').forEach(el => el.classList.add('hidden'));
+			const visibles = document.querySelectorAll('.cita-item[data-tab="' + tab + '"]');
+			if (visibles.length === 0) {
+				document.querySelectorAll('.tab-empty[data-for-tab="' + tab + '"]').forEach(el => {
+					el.classList.remove('hidden');
+				});
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', function () {
+			const contadores = {
+				pendientes:  {{ cntPendientes }},
+				confirmadas: {{ cntConfirmadas }},
+				completadas: {{ cntCompletadas }},
+				canceladas:  {{ cntCanceladas }}
+			};
+			const primera = Object.keys(contadores).find(k => contadores[k] > 0) || 'pendientes';
+			showTab(primera);
+		});
+	</script>
 {% endblock %}

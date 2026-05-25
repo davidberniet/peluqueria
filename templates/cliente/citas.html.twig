@@ -5,26 +5,26 @@
 {% block body %}
 <div class="max-w-4xl mx-auto">
 
-    <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex flex-wrap items-center gap-5">
-        <div class="bg-pink-100 text-pink-600 w-20 h-20 rounded-full flex items-center justify-center text-4xl font-extrabold shadow-inner shrink-0">
+    <div class="bg-white rounded-3xl p-5 sm:p-8 shadow-sm border border-gray-100 mb-6 flex flex-wrap items-center gap-4">
+        <div class="bg-pink-100 text-pink-600 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-3xl sm:text-4xl font-extrabold shadow-inner shrink-0">
             {{ app.user.nombre|first|upper }}
         </div>
         <div class="min-w-0">
-            <h1 class="text-3xl font-extrabold text-gray-900">Hola, {{ app.user.nombre }}</h1>
-            <p class="text-gray-500 font-medium mt-1 truncate">{{ app.user.email }}</p>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">Hola, {{ app.user.nombre }}</h1>
+            <p class="text-gray-500 font-medium mt-1 text-sm truncate">{{ app.user.email }}</p>
         </div>
     </div>
 
     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
 
-        <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex flex-wrap justify-between items-center gap-3">
-            <h2 class="text-xl font-bold text-gray-900">Mis Próximas Citas</h2>
-            <a href="{{ path('app_servicios') }}" class="text-sm font-bold text-white bg-gray-900 hover:bg-pink-500 px-5 py-2.5 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
+        <div class="px-5 py-4 sm:px-8 sm:py-6 border-b border-gray-100 bg-gray-50 flex flex-wrap justify-between items-center gap-3">
+            <h2 class="text-lg sm:text-xl font-bold text-gray-900">Mis Próximas Citas</h2>
+            <a href="{{ path('app_servicios') }}" class="text-sm font-bold text-white bg-gray-900 hover:bg-pink-500 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-md transition-all">
                 Nueva Cita +
             </a>
         </div>
 
-        <div class="p-8">
+        <div class="p-4 sm:p-6">
             {% if app.user.citas is empty %}
                 <div class="text-center py-10">
                     <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -39,66 +39,70 @@
                     </a>
                 </div>
             {% else %}
-                <div class="space-y-4">
+                <div class="space-y-3">
                     {% for cita in app.user.citas %}
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 border border-gray-100 rounded-2xl hover:border-pink-200 hover:shadow-md transition-all group">
+                        <div class="border border-gray-100 rounded-2xl hover:border-pink-200 hover:shadow-md transition-all group overflow-hidden">
 
-                            <div class="flex items-start gap-5">
-                                <div class="bg-gray-50 p-3 rounded-xl text-center min-w-[5rem] group-hover:bg-pink-50 transition-colors shrink-0">
-                                    <span class="block text-xs font-bold text-gray-400 uppercase">{{ cita.fechaInicio|date('M') }}</span>
-                                    <span class="block text-xl font-extrabold text-gray-900 group-hover:text-pink-600">{{ cita.fechaInicio|date('d') }}</span>
+                            {# Cabecera de la tarjeta: fecha + estado #}
+                            <div class="flex items-center justify-between px-4 py-3 bg-gray-50 group-hover:bg-pink-50 transition-colors border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="text-center">
+                                        <span class="block text-xs font-bold text-gray-400 uppercase leading-none">{{ cita.fechaInicio|date('M') }}</span>
+                                        <span class="block text-2xl font-extrabold text-gray-900 group-hover:text-pink-600 leading-tight">{{ cita.fechaInicio|date('d') }}</span>
+                                    </div>
+                                    <div class="w-px h-8 bg-gray-200"></div>
+                                    <span class="text-sm font-semibold text-gray-500">{{ cita.fechaInicio|date('H:i') }} – {{ cita.fechaFin|date('H:i') }}</span>
                                 </div>
-
-                                <div class="min-w-0">
-                                    <h4 class="text-lg font-bold text-gray-900">
-                                        {% for servicio in cita.servicios %}
-                                            {{ servicio.nombre }}{% if not loop.last %} + {% endif %}
-                                        {% else %}
-                                            Cita General
-                                        {% endfor %}
-                                    </h4>
-                                    <p class="text-sm text-gray-500 font-medium mt-1">
-                                        {{ cita.fechaInicio|date('H:i') }} - {{ cita.fechaFin|date('H:i') }}
-                                        &nbsp;·&nbsp;
-                                        {% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
-                                            <span class="font-bold uppercase text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">Completada</span>
-                                        {% elseif cita.estado == 'Pendiente' %}
-                                            <span class="font-bold uppercase text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">Pendiente</span>
-                                        {% elseif cita.estado == 'Confirmada' %}
-                                            <span class="font-bold uppercase text-xs px-2 py-1 rounded bg-green-100 text-green-800">Confirmada</span>
-                                        {% else %}
-                                            <span class="font-bold uppercase text-xs px-2 py-1 rounded bg-red-100 text-red-800">Cancelada</span>
-                                        {% endif %}
-                                    </p>
-
-                                    {% if cita.productos|length > 0 %}
-                                        <div class="mt-3 bg-pink-50 rounded-lg p-3 border border-pink-100">
-                                            <p class="text-xs font-bold text-pink-700 uppercase tracking-wider mb-1">Productos reservados para ese día:</p>
-                                            <ul class="text-sm text-gray-700">
-                                                {% for producto in cita.productos %}
-                                                    <li class="font-medium flex justify-between gap-4">
-                                                        <span>· {{ producto.nombre }}</span>
-                                                        <span class="font-bold">+{{ producto.precio }}€</span>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
-                                </div>
+                                {% if cita.estado != 'Cancelada' and cita.fechaInicio < date() %}
+                                    <span class="font-bold uppercase text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">Completada</span>
+                                {% elseif cita.estado == 'Pendiente' %}
+                                    <span class="font-bold uppercase text-xs px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700">Pendiente</span>
+                                {% elseif cita.estado == 'Confirmada' %}
+                                    <span class="font-bold uppercase text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-700">Confirmada</span>
+                                {% else %}
+                                    <span class="font-bold uppercase text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-700">Cancelada</span>
+                                {% endif %}
                             </div>
 
-                            <div class="mt-4 sm:mt-0 sm:text-right shrink-0">
-                                {% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
-                                    <a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}" onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')" class="inline-block text-red-400 hover:text-red-600 text-sm font-bold bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
-                                        Cancelar
-                                    </a>
-                                {% else %}
-                                    <a href="{{ path('app_cliente_cita_eliminar', {'id': cita.id}) }}" onclick="return confirm('¿Borrar este registro de tu historial?')" class="inline-flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 p-2.5 rounded-xl transition-colors" title="Eliminar del historial">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewbox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </a>
+                            {# Cuerpo: servicios + productos + acción #}
+                            <div class="px-4 py-4">
+                                <h4 class="text-base font-bold text-gray-900 leading-snug">
+                                    {% for servicio in cita.servicios %}
+                                        {{ servicio.nombre }}{% if not loop.last %} + {% endif %}
+                                    {% else %}
+                                        Cita General
+                                    {% endfor %}
+                                </h4>
+
+                                {% if cita.productos|length > 0 %}
+                                    <div class="mt-3 bg-pink-50 rounded-xl p-3 border border-pink-100">
+                                        <p class="text-xs font-bold text-pink-600 uppercase tracking-wider mb-2">Productos del día</p>
+                                        <ul class="space-y-1">
+                                            {% for producto in cita.productos %}
+                                                <li class="text-sm text-gray-700 font-medium flex justify-between">
+                                                    <span>· {{ producto.nombre }}</span>
+                                                    <span class="font-bold text-gray-900 shrink-0 ml-4">+{{ producto.precio }}€</span>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
                                 {% endif %}
+
+                                <div class="mt-4">
+                                    {% if cita.estado != 'Cancelada' and cita.fechaInicio > date() %}
+                                        <a href="{{ path('app_cita_cancelar', {'id': cita.id}) }}"
+                                           onclick="return confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')"
+                                           class="block w-full text-center text-red-500 hover:text-red-700 text-sm font-bold bg-red-50 hover:bg-red-100 px-4 py-2.5 rounded-xl transition-colors border border-red-100">
+                                            Cancelar cita
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ path('app_cliente_cita_eliminar', {'id': cita.id}) }}"
+                                           onclick="return confirm('¿Borrar este registro de tu historial?')"
+                                           class="block w-full text-center text-gray-400 hover:text-red-500 text-sm font-semibold hover:bg-red-50 px-4 py-2.5 rounded-xl transition-colors">
+                                            Eliminar del historial
+                                        </a>
+                                    {% endif %}
+                                </div>
                             </div>
 
                         </div>

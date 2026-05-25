@@ -216,7 +216,7 @@ class CitaController extends AbstractController
         foreach ($horarios as $horario) {
             $cursor    = clone $horario->getHoraApertura();
             $cierre    = $horario->getHoraCierre();
-            $intervalo = $horario->getIntervaloMinutos();
+            $intervalo = max(1, $horario->getIntervaloMinutos());
 
             while ($cursor < $cierre) {
                 $slotsTotales[] = $cursor->format('H:i');
@@ -285,7 +285,7 @@ class CitaController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Tu cita ha sido cancelada correctamente.');
-        return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
+        return $this->redirectToRoute('app_cliente_perfil', [], 302, '#historial');
     }
 
     #[Route('/cita/valorar/{id}', name: 'app_cita_valorar', methods: ['GET', 'POST'])]
@@ -297,7 +297,7 @@ class CitaController extends AbstractController
 
         if ($cita->getValoracion()) {
             $this->addFlash('error_perfil', 'Esta cita ya ha sido valorada.');
-            return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
+            return $this->redirectToRoute('app_cliente_perfil', [], 302, '#historial');
         }
 
         if ($request->isMethod('POST')) {
@@ -311,7 +311,7 @@ class CitaController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success_perfil', '¡Gracias por tu valoración!');
-                return $this->redirectToRoute('app_cliente_perfil', [], 301, '#historial');
+                return $this->redirectToRoute('app_cliente_perfil', [], 302, '#historial');
             }
         }
 

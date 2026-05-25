@@ -63,7 +63,9 @@ class AdminController extends AbstractController
         }
 
         $usuarios      = $userRepository->findAll();
-        $totalClientes = count($usuarios) > 0 ? count($usuarios) - 1 : 0;
+        $totalClientes = count(array_filter($usuarios, fn($u) =>
+            !in_array('ROLE_ADMIN', $u->getRoles()) && !in_array('ROLE_EMPLEADO', $u->getRoles())
+        ));
 
         return $this->render('admin/index.html.twig', [
             'citas'          => $citasTotal,

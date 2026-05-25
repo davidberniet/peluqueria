@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Local;
 use App\Entity\MensajeContacto;
+use App\Repository\CitaRepository;
 use App\Repository\ServicioRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,14 +16,15 @@ use Symfony\Component\Routing\Attribute\Route;
 class MainController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(ServicioRepository $repo): Response
+    public function index(ServicioRepository $repo, CitaRepository $citaRepository): Response
     {
-        // Cogemos los 3 primeros servicios activos para mostrarlos en la home
         $serviciosDestacados = $repo->findBy(['activo' => true], ['id' => 'ASC'], 3);
+        $resenas = $citaRepository->findUltimasResenas(3);
 
         return $this->render('main/index.html.twig', [
             'controller_name' => 'Peluquería Venus',
             'servicios_destacados' => $serviciosDestacados,
+            'resenas' => $resenas,
         ]);
     }
 
